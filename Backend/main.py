@@ -1,16 +1,19 @@
-from commands.auth import handle_login
-from utils.dependencies import checkDependency
-from utils.logmanager import get_date, error, warn, success, info, user_input
 import os
-from colorama import Fore, Back, Style
-from commands.wybierz_strone import wybierzStrone
-from utils.checkstatus import checkStatus
-from utils.mergeandsend import mergeandsend
-from commands.mergedata import mergedata
+
+from colorama import Back, Fore, Style
+
+from commands.auth import handle_login
+from commands.wybierz_strone import selectScrapeSite
 from tests.run_tests import run_tests
+from utils.dependencies import checkDependency
+from utils.logmanager import error, info, success
+
+# from utils.mergeandsend import mergeandsend
+
+
 def chooseAction():
     print(f"{Fore.GREEN}Main app menu{Style.RESET_ALL}:")
-    print(f"{Fore.GREEN} 1 {Style.RESET_ALL}- ")
+    print(f"{Fore.GREEN} 1 {Style.RESET_ALL}- scrape select")
     print(f"{Fore.GREEN} 2 {Style.RESET_ALL}- ")
     print(f"{Fore.GREEN} 3 {Style.RESET_ALL}- ")
     print(f"{Fore.GREEN} 4 {Style.RESET_ALL}- ")
@@ -18,12 +21,15 @@ def chooseAction():
     print(f"{Fore.GREEN} 6 {Style.RESET_ALL}- ")
     print(f"{Fore.GREEN} t {Style.RESET_ALL}- modules testing")
     print(f"{Fore.GREEN} a {Style.RESET_ALL}- auth")
-    action = input(f"{Fore.GREEN}\nSelect action:{Style.RESET_ALL}")
-
+    action = input(f"{Fore.GREEN}\nSelect action: {Style.RESET_ALL}")
+    action = action.lower()
     if action == "t":
         run_tests()
     elif action == "a":
         handle_login()
+    elif action == "1":
+        selectScrapeSite()
+
 
 def start():
     info("Run")
@@ -31,6 +37,7 @@ def start():
     checkDependency()
     info("Dependency check end\n")
     chooseAction()
+
 
 def checkFolders():
     if not os.path.exists("./robots"):
@@ -42,4 +49,5 @@ def checkFolders():
         os.makedirs("./data")
         success("Created /data")
 
-start()
+if __name__ == "__main__":
+    start()
