@@ -5,8 +5,10 @@ from bs4 import BeautifulSoup
 from colorama import Back, Fore, Style
 from tqdm import *
 
+from commands.auth import pocketbaseLogin
 from utils.headers import headers
 from utils.logmanager import error, info, success, user_input, warn
+from utils.pocketbase import create_record
 
 
 def scrape_lublineu():
@@ -129,38 +131,42 @@ def scrape_lublineu():
                     category_element.text.strip() if category_element else "No data"
                 )
 
+        combined_time = ""
+        if event_date != "No data" and event_time != "No data":
+            combined_time = f"{event_date} {event_time}"
+            print(combined_time)
         # Tworzenie słownika dla wydarzenia
         event_data = {
-            "nazwa": event_title,
-            "data": event_date if "event_date" in locals() else "Brak dannych",
-            "godzina_rozpoczecia": event_time,
-            "miejsce": event_place if "event_place" in locals() else "No data",
-            "organizator": event_organizer
+            "name": event_title,
+            "date": event_date if "event_date" in locals() else "Brak dannych",
+            "start_date": combined_time,
+            "location": event_place if "event_place" in locals() else "No data",
+            "organizer": event_organizer
             if "event_organizator" in locals()
             else "No data",
-            "udzial": event_participation
+            "cost": event_participation
             if "event_participation" in locals()
             else "No data",
-            "kategoria": event_category if "event_category" in locals() else "No data",
+            "category": event_category if "event_category" in locals() else "No data",
             "link": full_event_url,
         }
 
         data.append(event_data)
 
     # Wyświetlanie wyników
-    info(f"Znaleziono {len(data)} wydarzeń.")
+    info(f"Found {len(data)} events.")
     with open("./data/lublin_eu_data.json", "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
-    success("Szukanie wydarzeń zakończono!")
+    success("Scraping events finished!")
 
     # Scrapowanie wydarzeń cyklicznych
-    info("Rozpoczęto scrapowanie wydarzeń cyklicznych...")
+    info("Starting repeating event scrape...")
 
     cykliczne_section = soup.find("div", class_="events-groups-list")
 
     if not cykliczne_section:
-        warn("Nie znaleziono sekcji 'Wydarzenia cykliczne'")
+        warn("Can't find 'Wydarzenia cykliczne' section")
     else:
         event_groups = cykliczne_section.find_all("div", class_="event-group")
         cykliczne_data = []
@@ -250,7 +256,7 @@ def scrape_lublineu():
 
                 # Tworzenie słownika dla wydarzenia cyklicznego
                 event_data = {
-                    "title": event_title,
+                    "name": event_title,
                     "link": f"https://lublin.eu{event_url}",  # direct link to site
                     "start_date": start_date,
                     "end_date": end_date,
@@ -267,6 +273,21 @@ def scrape_lublineu():
             json.dump(cykliczne_data, f, ensure_ascii=False, indent=4)
 
         success(
-            f"Zapisano {len(cykliczne_data)} wydarzeń cyklicznych do pliku './data/lublin_eu_cykliczne.json'"
+            f"Saved {len(cykliczne_data)} repeating events to './data/lublin_eu_cykliczne.json'"
         )
-    success(f"\nScrapowanie {base_url} zakończono!")
+    success(f"\nScraping {base_url} finished!")
+
+# def upload_lublineu():
+#     token = pocketbaseLogin.auth
+#     info("Uploading scraped data from Lublin.eu")
+#     with open("./data/lublin_eu_data.json", "r") as f:
+#         events = json.load(f)
+#     with open("./data/lublin_eu_cykliczne.json", "r") as f:
+#         cykliczne = json.load(f)
+
+#     for event in events:
+#         try:
+#             create_record(collection="lubeu_cykliczne",data=event,authorization=token)
+#         except Exception as e:
+#             error(f"Failed to upload event {event['nazwa']}: {e}")
+#             continue
