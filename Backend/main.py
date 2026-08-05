@@ -5,7 +5,7 @@ from colorama import Back, Fore, Style
 
 from commands.auth import handle_login
 from commands.delete_all import delete_all_records
-from commands.wybierz_strone import selectScrapeSite
+from commands.page_select import select_scrape_site
 from tests.run_tests import run_tests
 from upload.upload_select import upload_select
 from utils.dependencies import checkDependency
@@ -34,7 +34,7 @@ def chooseAction():
     elif action == "d":
         delete_all_records()
     elif action == "1":
-        selectScrapeSite()
+        select_scrape_site()
     elif action == "2":
         upload_select()
     else:
@@ -59,6 +59,7 @@ def checkFolders():
         error("/data doesn't exist")
         os.makedirs("./data")
         success("Created /data")
+
 
 if __name__ == "__main__":
     start()

@@ -4,6 +4,7 @@ from utils.logmanager import info
 from utils.pocketbase import CollectionRequestError, delete_record, get_collection
 from colorama import Fore, Back, Style
 
+
 def delete_all_records():
     ath = pocketbaseLogin()
     token = ath.getAuthHeader()
@@ -27,12 +28,18 @@ def delete_all_records():
                     itemids.append(item["id"])
                 while curPage != totalPages:
                     curPage += 1
-                    nxtpg = get_collection(collection=collection, authorization=token, page=curPage)
+                    nxtpg = get_collection(
+                        collection=collection, authorization=token, page=curPage
+                    )
                     for item in nxtpg["items"]:
                         itemids.append(item["id"])
-                info(f"{Back.LIGHTRED_EX}Will delete {totalItems} items{Style.RESET_ALL}")
+                info(
+                    f"{Back.LIGHTRED_EX}Will delete {totalItems} items{Style.RESET_ALL}"
+                )
                 for to_del_id in itemids:
-                    delete_record(record_id=to_del_id, collection=collection, authorization=token)
+                    delete_record(
+                        record_id=to_del_id, collection=collection, authorization=token
+                    )
 
                 continue
             except CollectionRequestError as e:

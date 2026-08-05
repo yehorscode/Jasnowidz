@@ -92,6 +92,9 @@ def scrape_lublineu():
 
         event_soup = BeautifulSoup(event_response.content, "html.parser")
 
+        img_element = event_soup.find("img", alt="Baner promocyjny")
+        img_link = f"https://lublin.eu{img_element['src']}" if img_element else None
+
         labels = event_soup.find_all("span", class_="label")
 
         for label in labels:
@@ -126,7 +129,7 @@ def scrape_lublineu():
         if event_date != "No data" and event_time != "No data":
             combined_time = f"{event_date} {event_time}"
             print(combined_time)
-        # Tworzenie słownika dla wydarzenia
+
         event_data = {
             "name": event_title,
             "date": event_date if "event_date" in locals() else "Brak dannych",
@@ -140,6 +143,7 @@ def scrape_lublineu():
             else "No data",
             "category": event_category if "event_category" in locals() else "No data",
             "link": full_event_url,
+            "image": img_link,
         }
 
         data.append(event_data)
@@ -270,7 +274,7 @@ def scrape_lublineu():
 
 def upload_lublineu():
     auth = pocketbaseLogin()
-    token=auth.getAuthHeader()
+    token = auth.getAuthHeader()
     info("Uploading scraped data from Lublin.eu")
     with open("./data/lublin_eu_data.json", "r") as f:
         events = json.load(f)
@@ -279,7 +283,7 @@ def upload_lublineu():
 
     for event in events:
         try:
-            create_record(collection="lubeu_cykliczne",data=event,authorization=token)
+            create_record(collection="lubeu_cykliczne", data=event, authorization=token)
         except Exception as e:
             error(f"Failed to upload event {event['name']}: {e}")
             continue

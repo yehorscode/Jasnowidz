@@ -20,7 +20,7 @@ def upload_select():
         "lublin_eu_cykliczne.json": dummy,
         "lublin_eu_data.json": upload_lublineu,
         "zoom_events.json": upload_zoom,
-        "zoom_events_running.json": upload_zoom_running
+        "zoom_events_running.json": upload_zoom_running,
     }
     files = os.listdir("./data")
     info(f"Found these files {files}")

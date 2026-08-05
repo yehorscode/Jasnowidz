@@ -26,21 +26,21 @@ def error(msg):
 def warn(msg):
     logger.warning(msg)
     print(
-        f"{Back.LIGHTYELLOW_EX}{get_date()} WARNING:{Style.RESET_ALL} {Fore.YELLOW}{msg}{Style.RESET_ALL}"
+        f"{Back.LIGHTYELLOW_EX}{Fore.BLACK}{get_date()} WARNING:{Style.RESET_ALL} {Fore.YELLOW}{msg}{Style.RESET_ALL}"
     )
 
 
 def success(msg):
     logger.info(msg)
     print(
-        f"{Back.GREEN}{get_date()} Success:{Style.RESET_ALL} {Fore.GREEN}{msg}{Style.RESET_ALL}"
+        f"{Back.GREEN}{Fore.BLACK}{get_date()} Success:{Style.RESET_ALL} {Fore.GREEN}{msg}{Style.RESET_ALL}"
     )
 
 
 def info(msg):
     logger.info(msg)
     print(
-        f"{Back.BLUE}{get_date()} INFO:{Style.RESET_ALL} {Fore.BLUE}{msg}{Style.RESET_ALL}"
+        f"{Back.BLUE}{Fore.BLACK}{get_date()} INFO:{Style.RESET_ALL} {Fore.BLUE}{msg}{Style.RESET_ALL}"
     )
 
 

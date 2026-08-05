@@ -1,5 +1,7 @@
 from utils.logmanager import error, warn, success, info, user_input
 import os
+
+
 def checkDependency():
     hasRequests = None
     hasSoup = None
@@ -8,18 +10,21 @@ def checkDependency():
     hasTQDM = None
     try:
         import tqdm
+
         hasTQDM = True
     except ImportError:
         hasTQDM = False
         error("tqdm missing")
     try:
         import colorama
+
         hasColorama = True
     except ImportError:
         hasColorama = False
         error("colorama missing")
     try:
         import requests
+
         hasRequests = True
     except ImportError:
         hasRequests = False
@@ -27,6 +32,7 @@ def checkDependency():
 
     try:
         from bs4 import BeautifulSoup
+
         hasSoup = True
     except ImportError:
         hasSoup = False

@@ -58,7 +58,8 @@ def scrape_zoom():
         place_element = event.find("div", class_="event-card__place")
         time_element = event.find("div", class_="event-card__dates").find("span")
         genre_element = event.find("div", class_="event-card__data-right").find("span")
-
+        image_element = event.find("img", class_="attachment-event-card-image")
+        image_url = image_element["src"] if image_element else None
         title = title_element.text.strip() if title_element else None
         link = link_element["href"] if link_element else None
         if place_element:
@@ -81,13 +82,12 @@ def scrape_zoom():
             "start_date": time,
             "category": genre,
             "cost": None,
+            "image": image_url,
         }
 
         if link:
-            # Wykonaj dodatkowy request do linku
             link_response = requests.get(link, headers=headers)
             if link_response.status_code == 200:
-                # Scrapuj potrzebne dane z linku
                 link_soup = BeautifulSoup(link_response.content, "html.parser")
                 bilety_element = link_soup.find("p", text="Bilety:")
                 if bilety_element:

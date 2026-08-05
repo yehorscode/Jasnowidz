@@ -2,6 +2,7 @@ import json
 from tqdm import *
 from utils.logmanager import get_date, error, warn, success, info, user_input
 
+
 def mergedata():
     lublin_eu = "././data/lublin_eu_data.json"
     zoom = "././data/zoom_events.json"
@@ -36,7 +37,7 @@ def mergedata():
         colour="green",
         ascii=True,
     ):
-        count+=1
+        count += 1
         final_plik.append(
             {
                 "nazwa": element["nazwa"],
@@ -50,7 +51,6 @@ def mergedata():
             }
         )
     success(f"Złączono {count} elementów")
-    
 
     count = 0
     info("Początek mergu Zoom")
@@ -62,7 +62,7 @@ def mergedata():
         colour="green",
         ascii=True,
     ):
-        count+=1
+        count += 1
         final_plik.append(
             {
                 "nazwa": element["title"],
@@ -72,17 +72,18 @@ def mergedata():
                 "miejsce": element["place"],
                 "link": element["link"],
                 "kategoria": element["genre"],
-                "source": "zoom.lublin.pl"
+                "source": "zoom.lublin.pl",
             }
         )
 
     success(f"Złączono {count} elementów")
 
     info("Zapisywanie pliku")
-    
+
     with open(output, "w", encoding="utf-8") as f:
         json.dump(final_plik, f, indent=4, ensure_ascii=False)
         success(f"Zapisano plik i ma {len(final_plik)} elementów")
         if len(final_plik) != (lublin_plik.__len__() + zoom_plik.__len__()):
-            error(f"Powinien mieć {lublin_plik.__len__() + zoom_plik.__len__()} elementów")
-
+            error(
+                f"Powinien mieć {lublin_plik.__len__() + zoom_plik.__len__()} elementów"
+            )
