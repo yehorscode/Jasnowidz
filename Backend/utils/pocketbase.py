@@ -157,7 +157,7 @@ def create_record(
         )
     elif response.status_code == 400:
         raise CollectionCreateRecordError(
-            f"Missing required values for creating record {response.request}"
+            f"Missing required values or not authorized to create record {response.request}"
         )
     else:
         raise CollectionRequestError(

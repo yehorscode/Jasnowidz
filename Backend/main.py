@@ -1,12 +1,14 @@
 import os
+import sys
 
 from colorama import Back, Fore, Style
 
 from commands.auth import handle_login
 from commands.wybierz_strone import selectScrapeSite
 from tests.run_tests import run_tests
+from upload.upload_select import upload_select
 from utils.dependencies import checkDependency
-from utils.logmanager import error, info, success
+from utils.logmanager import error, info, success, warn
 
 # from utils.mergeandsend import mergeandsend
 
@@ -14,7 +16,7 @@ from utils.logmanager import error, info, success
 def chooseAction():
     print(f"{Fore.GREEN}Main app menu{Style.RESET_ALL}:")
     print(f"{Fore.GREEN} 1 {Style.RESET_ALL}- scrape select")
-    print(f"{Fore.GREEN} 2 {Style.RESET_ALL}- ")
+    print(f"{Fore.GREEN} 2 {Style.RESET_ALL}- upload select")
     print(f"{Fore.GREEN} 3 {Style.RESET_ALL}- ")
     print(f"{Fore.GREEN} 4 {Style.RESET_ALL}- ")
     print(f"{Fore.GREEN} 5 {Style.RESET_ALL}- ")
@@ -29,6 +31,11 @@ def chooseAction():
         handle_login()
     elif action == "1":
         selectScrapeSite()
+    elif action == "2":
+        upload_select()
+    else:
+        warn(f"Unrecognised command {action} quitting")
+        sys.exit()
 
 
 def start():

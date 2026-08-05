@@ -1,46 +1,35 @@
+import json
+
 import requests
 from bs4 import BeautifulSoup
-import json
-from utils.logmanager import error, success, info, warn, user_input
-from tqdm import *
-from colorama import Fore, Back, Style
+from colorama import Back, Fore, Style
+from tqdm import tqdm
 
+from commands.auth import pocketbaseLogin
 from utils.headers import headers
+from utils.logmanager import error, info, success, warn
+from utils.pocketbase import create_record
 
 
 def scrape_zoom():
     url = "https://zoom.lublin.pl/wydarzenia/"
     base_url = "https://zoom.lublin.pl"
 
-    info(f"Rozpoczęto diagnostykę strony: {url}")
+    info(f"Starting diagnostics for: {url}")
 
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        error(f"Błąd podczas pobierania strony {url}: {response.status_code}")
-        return None
+        error(f"Error while downloading {url}: {response.status_code}")
+        return
     else:
-        success("Strona działa")
+        success("Page works")
 
-    robots_url = f"{base_url}/robots.txt"
-
-    info(f"Pobieram robots.txt z {robots_url}")
-
-    robots_response = requests.get(robots_url, headers=headers)
-
-    if robots_response.status_code == 200:
-        warn("Strona posiada robots.txt, ale nie jesteś robotem? Prawda?")
-        success(f"Zapisano robots.txt do pliku")
-        with open("./robots/zoom_robots.txt", "w") as f:
-            f.write(robots_response.text)
-    else:
-        error(f"Błąd podczas pobierania robots.txt: {robots_response.status_code}")
-
-    success("Diagnostyka zakończona!")
+    success("Checks ended")
 
     # Potrzebne dane
     # nazwa, adres, daty, link, gatunek
 
-    info(f"Rozpoczęto scrapowanie strony: {url}")
+    info(f"Scraping page: {url}")
 
     content = response.content
     soup = BeautifulSoup(content, "html.parser")
@@ -49,17 +38,17 @@ def scrape_zoom():
         "div", class_="event-card-wrapper"
     )
 
-    info(f"Znaleziono {len(event_elements)} elementów wydarzeń.")
+    info(f"Found {len(event_elements)} events.")
 
     data = []
     bajka_data = []
 
-    info("Rozpoczenie szukania wydarzeń...")
+    info("Starting search...")
 
     for event in tqdm(
         event_elements,
-        desc="Szukanie...",
-        unit="wydarzenie",
+        desc="Searching...",
+        unit="event",
         bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {unit} • {elapsed} elapsed • {remaining} remaining",
         colour="green",
         ascii=True,
@@ -86,12 +75,12 @@ def scrape_zoom():
         link = link_element["href"] if link_element else None
 
         event_data = {
-            "title": title,
+            "name": title,
             "link": link,
-            "place": place,
-            "time": time,
-            "genre": genre,
-            "bilety": None,  # Dodaj to pole
+            "location": place,
+            "start_date": time,
+            "category": genre,
+            "cost": None,
         }
 
         if link:
@@ -103,9 +92,9 @@ def scrape_zoom():
                 bilety_element = link_soup.find("p", text="Bilety:")
                 if bilety_element:
                     bilety_text = bilety_element.find_next("p").text.strip()
-                    event_data["bilety"] = bilety_text
+                    event_data["cost"] = bilety_text
             else:
-                error(f"Błąd podczas pobierania linku: {link_response.status_code}")
+                error(f"Error: {link_response.status_code}")
 
         data.append(event_data)
 
@@ -113,16 +102,16 @@ def scrape_zoom():
             bajka_data.append(event_data)
 
     if len(data) == 0:
-        error(f"Nie znaleziono żadnych wydarzeń")
+        error(f"No events found")
     else:
-        success(f"Znaleziono {len(data)} wydarzeń")
+        success(f"Found {len(data)} events")
 
     if len(bajka_data) == 0:
-        warn("Nie znaleziono wydarzeń w Kino Bajka")
+        warn("No events in Kino Bajka")
     else:
-        success(f"Znaleziono {len(bajka_data)} wydarzeń w Kino Bajka")
+        success(f"Found {len(bajka_data)} events in Kino Bajka")
 
-    info("Zakończono szukanie wydarzeń.")
+    info("Event search ended.")
 
     with open("./data/zoom_events.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
@@ -130,4 +119,21 @@ def scrape_zoom():
     with open("./data/zoom_bajka_events.json", "w", encoding="utf-8") as f:
         json.dump(bajka_data, f, ensure_ascii=False, indent=4)
 
-    success("Zapisano dane wydarzeń do plików JSON.")
+    success("Saved event files to json.")
+
+
+def upload_zoom():
+    auth = pocketbaseLogin()
+    token = auth.getAuthHeader()
+    info("Uploading scraped data from zoom.lublin.eu")
+    with open("./data/zoom_events.json", "r") as f:
+        events = json.load(f)
+    # with open("./data/lublin_eu_cykliczne.json", "r") as f:
+    #     cykliczne = json.load(f)
+
+    for event in events:
+        try:
+            create_record(collection="zoom", data=event, authorization=token)
+        except Exception as e:
+            error(f"Failed to upload event {event['name']}: {e}")
+            continue

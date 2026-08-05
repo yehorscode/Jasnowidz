@@ -7,7 +7,6 @@ from os import getenv
 dotenv.load_dotenv()
 
 def handle_login():
-    print()
     info("Token will be regenerated on every auth request")
     pocketbaseLogin().auth()
 

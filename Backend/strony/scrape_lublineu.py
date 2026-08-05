@@ -1,5 +1,6 @@
 import json
 
+import certifi
 import requests
 from bs4 import BeautifulSoup
 from colorama import Back, Fore, Style
@@ -10,6 +11,10 @@ from utils.headers import headers
 from utils.logmanager import error, info, success, user_input, warn
 from utils.pocketbase import create_record
 
+# CONNECTIONS ARE BEING MADE UNSECURED ENSURE THAT SECURITY IS SECURE OR SOMETHING
+# because lublin.eu has weird ssl certificates that i wasnt able to get working on two systems
+# for this script and this script only the verification of SSL DISABLED
+
 
 def scrape_lublineu():
     url = "https://lublin.eu/kultura/wydarzenia/"
@@ -17,26 +22,12 @@ def scrape_lublineu():
 
     info(f"Started to scrape: {url}")
 
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, verify=False)
     if response.status_code != 200:
         error(f"Error while loading {url}: {response.status_code}")
         return
     else:
         success("Page works")
-
-    robots_url = f"{base_url}/robots.txt"
-
-    info(f"Downloading robots.txt {robots_url}")
-
-    robots_response = requests.get(robots_url, headers=headers)
-
-    if robots_response.status_code == 200:
-        warn("Site has robots.txt policy. You aren't a robot right?")
-        success("Saved robots.txt to file")
-        with open("./robots/lublin_eu_robots.txt", "w") as f:
-            f.write(robots_response.text)
-    else:
-        error(f"Error while loading robots: {robots_response.status_code}")
 
     success("Diagnostics complete")
 
@@ -91,7 +82,7 @@ def scrape_lublineu():
         # Direct link to event page
         full_event_url = f"https://lublin.eu{event_url}"
         try:
-            event_response = requests.get(full_event_url, headers=headers)
+            event_response = requests.get(full_event_url, headers=headers, verify=False)
         except requests.exceptions.RequestException:
             warn(f"Can't fetch info for event url: {full_event_url}")
             continue
@@ -192,7 +183,9 @@ def scrape_lublineu():
                 event_url = link_element.get("href", "").strip()
 
                 expanded_scrape = requests.get(
-                    f"https://lublin.eu{event_url}", headers=headers
+                    f"https://lublin.eu{event_url}",
+                    headers=headers,
+                    verify=False,
                 )
 
                 if expanded_scrape.status_code != 200:
@@ -229,10 +222,7 @@ def scrape_lublineu():
                                 if place_element
                                 else "No data"
                             )
-                        elif (
-                            label.text.strip().rstrip(":")
-                            == "Organizator"
-                        ):
+                        elif label.text.strip().rstrip(":") == "Organizator":
                             organizer_element = label.find_next_sibling("span")
                             event_organizer = (
                                 organizer_element.text.strip()
@@ -277,17 +267,19 @@ def scrape_lublineu():
         )
     success(f"\nScraping {base_url} finished!")
 
-# def upload_lublineu():
-#     token = pocketbaseLogin.auth
-#     info("Uploading scraped data from Lublin.eu")
-#     with open("./data/lublin_eu_data.json", "r") as f:
-#         events = json.load(f)
-#     with open("./data/lublin_eu_cykliczne.json", "r") as f:
-#         cykliczne = json.load(f)
 
-#     for event in events:
-#         try:
-#             create_record(collection="lubeu_cykliczne",data=event,authorization=token)
-#         except Exception as e:
-#             error(f"Failed to upload event {event['nazwa']}: {e}")
-#             continue
+def upload_lublineu():
+    auth = pocketbaseLogin()
+    token=auth.getAuthHeader()
+    info("Uploading scraped data from Lublin.eu")
+    with open("./data/lublin_eu_data.json", "r") as f:
+        events = json.load(f)
+    with open("./data/lublin_eu_cykliczne.json", "r") as f:
+        cykliczne = json.load(f)
+
+    for event in events:
+        try:
+            create_record(collection="lubeu_cykliczne",data=event,authorization=token)
+        except Exception as e:
+            error(f"Failed to upload event {event['name']}: {e}")
+            continue
