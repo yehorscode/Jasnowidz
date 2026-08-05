@@ -4,6 +4,7 @@ from colorama import Back, Fore, Style
 
 from strony.scrape_lublineu import upload_lublineu
 from strony.scrape_zoom import upload_zoom
+from strony.scrape_zoom_running import upload_zoom_running
 from utils.config import COLLECTIONS
 from utils.logmanager import *
 
@@ -19,6 +20,7 @@ def upload_select():
         "lublin_eu_cykliczne.json": dummy,
         "lublin_eu_data.json": upload_lublineu,
         "zoom_events.json": upload_zoom,
+        "zoom_events_running.json": upload_zoom_running
     }
     files = os.listdir("./data")
     info(f"Found these files {files}")

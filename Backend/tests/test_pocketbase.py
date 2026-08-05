@@ -10,14 +10,15 @@ from utils.pocketbase import create_record, delete_record, get_collection, get_r
 load_dotenv()
 
 collection = "test"
-record_id = "0zrjp3n9wwvlfhg"
-superuser_token = getenv("SUPERUSER_TOKEN")
+record_id = "28rs8m436gw04mf"
 
 
 def test_pocketbase():
+    pb = auth.pocketbaseLogin()
+    token = pb.getAuthHeader()
     tests = [False, False, False, False]
     info("Starting pocketbase test")
-    got_record = get_record(collection, record_id, authorization=superuser_token)
+    got_record = get_record(collection, record_id, authorization=token)
     if got_record:
         success(
             f"\nGot record with title of {got_record['name']}, {got_record['description']}"
@@ -27,7 +28,7 @@ def test_pocketbase():
         error("Failed to get record")
         tests[0] = False
 
-    got_collection = get_collection(collection, authorization=superuser_token)
+    got_collection = get_collection(collection, authorization=token)
     if got_collection:
         success(f"\nGot collection with {got_collection['totalItems']} items")
         tests[1] = True
@@ -36,7 +37,7 @@ def test_pocketbase():
         tests[1] = False
 
     created_record = create_record(
-        collection, {"name": "Test record"}, authorization=superuser_token
+        collection, {"name": "Test record"}, authorization=token
     )
     if created_record:
         success(f"\nCreated record with id of {created_record['id']}")
@@ -47,7 +48,7 @@ def test_pocketbase():
     to_delete = ""
     if created_record:
         to_delete = created_record["id"]
-    deleted_record = delete_record(to_delete, collection, authorization=superuser_token)
+    deleted_record = delete_record(to_delete, collection, authorization=token)
     if deleted_record:
         success(f"\nDeleted record with id of {to_delete}")
         tests[3] = True

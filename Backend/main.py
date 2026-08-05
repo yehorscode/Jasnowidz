@@ -4,6 +4,7 @@ import sys
 from colorama import Back, Fore, Style
 
 from commands.auth import handle_login
+from commands.delete_all import delete_all_records
 from commands.wybierz_strone import selectScrapeSite
 from tests.run_tests import run_tests
 from upload.upload_select import upload_select
@@ -23,12 +24,15 @@ def chooseAction():
     print(f"{Fore.GREEN} 6 {Style.RESET_ALL}- ")
     print(f"{Fore.GREEN} t {Style.RESET_ALL}- modules testing")
     print(f"{Fore.GREEN} a {Style.RESET_ALL}- auth")
+    print(f"{Fore.GREEN} d {Style.RESET_ALL}- delete all records")
     action = input(f"{Fore.GREEN}\nSelect action: {Style.RESET_ALL}")
     action = action.lower()
     if action == "t":
         run_tests()
     elif action == "a":
         handle_login()
+    elif action == "d":
+        delete_all_records()
     elif action == "1":
         selectScrapeSite()
     elif action == "2":
