@@ -2,9 +2,9 @@ import os
 
 from colorama import Back, Fore, Style
 
-from strony.scrape_lublineu import upload_lublineu
-from strony.scrape_zoom import upload_zoom
-from strony.scrape_zoom_running import upload_zoom_running
+from scrapers.scrape_lublineu import upload_lublineu
+from scrapers.scrape_zoom import upload_zoom
+from scrapers.scrape_zoom_running import upload_zoom_running
 from utils.config import COLLECTIONS
 from utils.logmanager import *
 

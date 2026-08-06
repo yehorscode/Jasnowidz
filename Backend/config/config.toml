@@ -1,0 +1,28 @@
+pocketbase_url = "https://jasnowidzdb.yehor.pl.eu.org" # must be a valid pocketbase url with created collections
+collections = [
+  "test",
+  "lubeu_events",
+  "lubeu_running",
+  "zoom",
+  "zoom_running",
+  "labirynt_wystawy",
+  "labirynt_wydarzenia",
+]
+
+[scrapers]
+
+[scrapers.lublineu]
+enabled = true
+output = "lublineu_events.json"
+
+[scrapers.lublineu_running]
+enabled = true
+output = "lublin_eu_running.json"
+
+[scrapers.zoom]
+enabled = true
+output = "zoom_events.json"
+
+[scrapers.zoom_running]
+enabled = true
+output = "zoom_events_running.json"

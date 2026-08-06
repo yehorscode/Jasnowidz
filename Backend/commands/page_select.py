@@ -1,8 +1,8 @@
 from colorama import Back, Style
 
-from strony.scrape_lublineu import scrape_lublineu
-from strony.scrape_zoom import scrape_zoom
-from strony.scrape_zoom_running import scrape_zoom_running
+from scrapers.scrape_lublineu import scrape_lublineu
+from scrapers.scrape_zoom import scrape_zoom
+from scrapers.scrape_zoom_running import scrape_zoom_running
 from utils.logmanager import *
 
 

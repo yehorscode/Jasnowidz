@@ -1,8 +1,9 @@
+from colorama import Back, Fore, Style
+
 from commands.auth import pocketbaseLogin
 from utils.config import COLLECTIONS
-from utils.logmanager import info
+from utils.logmanager import info, success, warn
 from utils.pocketbase import CollectionRequestError, delete_record, get_collection
-from colorama import Fore, Back, Style
 
 
 def delete_all_records():
@@ -44,3 +45,13 @@ def delete_all_records():
                 continue
             except CollectionRequestError as e:
                 print(e)
+
+def delete_local_data():
+    import os
+    import shutil
+
+    if os.path.exists("./data"):
+        shutil.rmtree("./data")
+        success("Deleted all local data from ./data")
+    else:
+        warn("No data available")
