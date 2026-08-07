@@ -11,6 +11,8 @@ from utils.headers import headers
 from utils.logmanager import error, info, success, warn
 from utils.pocketbase import create_record
 
+# Scraping scripts for zoom.lublin.pl
+# id in config: zoom
 
 def scrape_zoom():
     config = load_config()
@@ -122,8 +124,6 @@ def upload_zoom():
     info("Uploading scraped data from zoom.lublin.eu")
     with open("./data/zoom_events.json", "r") as f:
         events = json.load(f)
-    # with open("./data/lublin_eu_cykliczne.json", "r") as f:
-    #     cykliczne = json.load(f)
 
     for event in events:
         try:

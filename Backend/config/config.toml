@@ -1,5 +1,5 @@
 pocketbase_url = "https://jasnowidzdb.yehor.pl.eu.org" # must be a valid pocketbase url with created collections
-collections = [
+collections = [ # with every new script that accesses pocketbase new entries must be added
   "test",
   "lubeu_events",
   "lubeu_running",
@@ -9,7 +9,7 @@ collections = [
   "labirynt_wydarzenia",
 ]
 
-[scrapers]
+[scrapers] # scrapers.script_id
 
 [scrapers.lublineu]
 enabled = true
@@ -26,3 +26,7 @@ output = "zoom_events.json"
 [scrapers.zoom_running]
 enabled = true
 output = "zoom_events_running.json"
+
+[scrapers.labirynt_exhibitions]
+enabled = true
+output = "labirynt_exhibitions.json"

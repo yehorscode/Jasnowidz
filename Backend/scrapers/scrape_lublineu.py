@@ -12,6 +12,9 @@ from utils.headers import headers
 from utils.logmanager import error, info, success, user_input, warn
 from utils.pocketbase import create_record
 
+# Scraping script for lublin.eu
+# id in config: lublineu (main events), lublineu_running (for running/ongoing events)
+
 # CONNECTIONS ARE BEING MADE UNSECURED ENSURE THAT SECURITY IS SECURE OR SOMETHING
 # because lublin.eu has weird ssl certificates that i wasnt able to get working on two systems
 # for this script and this script only the verification of SSL DISABLED
@@ -34,12 +37,6 @@ def scrape_lublineu():
         success("Page works")
 
     success("Diagnostics complete")
-
-    # Początek scrapowania strony lublina
-    # Potrzebne dane:
-    # Nazwa, Data, Godzina Rozpoczęcia, Miejsce, Udział (Platny, Darmowy, Zapisy), Kategoria, Link bezpośredni
-    # Wydarzenia Cykliczne lublin.eu:
-    # Nazwa
 
     info(f"Started scraping: {url}")
 
@@ -256,7 +253,7 @@ def scrape_lublineu():
 
                     event_data = {
                         "name": event_title,
-                        "link": f"https://lublin.eu{event_url}",  # direct link to site
+                        "link": f"https://lublin.eu{event_url}",
                         "start_date": start_date,
                         "end_date": end_date,
                         "time": event_time,

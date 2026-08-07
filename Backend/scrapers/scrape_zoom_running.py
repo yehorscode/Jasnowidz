@@ -11,6 +11,8 @@ from utils.headers import headers
 from utils.logmanager import error, info, success, user_input, warn
 from utils.pocketbase import create_record
 
+# Scraping script for zoom.lublin.pl running events
+# id in config: zoom_running
 
 def scrape_zoom_running():
     config = load_config()

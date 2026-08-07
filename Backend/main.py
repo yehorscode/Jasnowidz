@@ -54,10 +54,6 @@ def start():
 
 
 def checkFolders():
-    if not os.path.exists("./robots"):
-        error("/robots doesn't exist")
-        os.makedirs("./robots")
-        success("Created /robots")
     if not os.path.exists("./data"):
         error("/data doesn't exist")
         os.makedirs("./data")

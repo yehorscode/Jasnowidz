@@ -1,5 +1,6 @@
 from colorama import Back, Style
 
+from scrapers.scrape_labirynt import scrape_labirynt_exhibitions
 from scrapers.scrape_lublineu import scrape_lublineu
 from scrapers.scrape_zoom import scrape_zoom
 from scrapers.scrape_zoom_running import scrape_zoom_running
@@ -16,6 +17,9 @@ def select_scrape_site():
     print(
         f"{Fore.CYAN} 4 {Style.RESET_ALL} - https://zoom.lublin.pl/w-trakcie (running events)"
     )
+    print(
+        f"{Fore.CYAN} 5 {Style.RESET_ALL} - https://labirynt.com/wystawy (running + future)"
+    )
     info("Remember: do not run the script too often or you will be ratelimited")
     response = user_input("Select: ")
     if response == "1":
@@ -29,3 +33,5 @@ def select_scrape_site():
         scrape_zoom()
     if response == "4":
         scrape_zoom_running()
+    if response == "5":
+        scrape_labirynt_exhibitions()
