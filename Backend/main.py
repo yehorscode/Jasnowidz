@@ -10,7 +10,7 @@ from tests.run_tests import run_tests
 from upload.upload_select import upload_select
 from utils.config import open_config
 from utils.logmanager import error, info, success, warn
-
+from utils.print_stats import print_stats
 # from utils.mergeandsend import mergeandsend
 
 
@@ -25,6 +25,7 @@ def chooseAction():
     print(f"{Fore.GREEN} a {Style.RESET_ALL}- auth")
     print(f"{Fore.GREEN} d {Style.RESET_ALL}- delete all remote records")
     print(f"{Fore.GREEN} dl {Style.RESET_ALL}- delete local records")
+    print(f"{Fore.GREEN} stat {Style.RESET_ALL}- print scraped data stats")
     action = input(f"{Fore.GREEN}\nSelect action: {Style.RESET_ALL}")
     action = action.lower()
     if action == "t":
@@ -41,6 +42,8 @@ def chooseAction():
         upload_select()
     elif action == "dl":
         delete_local_data()
+    elif action == "stat":
+        print_stats()
     else:
         warn(f"Unrecognised command {action} quitting")
         sys.exit()

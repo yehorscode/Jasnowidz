@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 
 import requests
@@ -14,11 +15,80 @@ from utils.pocketbase import create_record
 # Scraping script for zoom.lublin.pl running events
 # id in config: zoom_running
 
+def scrape_event(event):
+    title_element = event.find("h3", class_="event-card__title")
+    link_element = event.find("a", class_="event-card__image-link")
+    place_element = event.find("div", class_="event-card__place")
+    time_element = event.find("div", class_="event-card__dates").find("span")
+    genre_element = event.find("div", class_="event-card__data-right").find("span")
+
+    title = title_element.text.strip() if title_element else None
+    link = link_element["href"] if link_element else None
+    if place_element:
+        place = (
+            place_element.find("span").text.strip()
+            if place_element.find("span")
+            else None
+        )
+    else:
+        place = None
+    time = time_element.text.strip() if time_element else None
+    genre = genre_element.text.strip() if genre_element else None
+
+    link = link_element["href"] if link_element else None
+
+    event_data = {
+        "name": title,
+        "link": link,
+        "location": place,
+        "start_date": time,
+        "category": genre,
+        "cost": None,
+    }
+
+    if link:
+        link_response = requests.get(link, headers=headers)
+        if link_response.status_code == 200:
+            link_soup = BeautifulSoup(link_response.content, "html.parser")
+            bilety_element = link_soup.find("p", text="Bilety:")
+            if bilety_element:
+                bilety_text = bilety_element.find_next("p").text.strip()
+                event_data["cost"] = bilety_text
+        else:
+            error(f"Error while loading link: {link_response.status_code}")
+
+    return event_data
+
+MAX_WORKERS = 100
+
+def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
+    results = []
+    if not event_list:
+        return results
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_event = {
+            executor.submit(scrape_event, event): event
+            for event in event_list
+        }
+        for future in tqdm(
+            as_completed(future_to_event),
+            total=len(event_list),
+            desc="Scraping events...",
+            unit="event",
+            bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {unit} • {elapsed} elapsed • {remaining} remaining",
+            colour="green",
+            ascii=True,
+        ):
+            data = future.result()
+            if data:
+                results.append(data)
+
+        return results
+
 def scrape_zoom_running():
     config = load_config()
     config = config["scrapers"]
     url = "https://zoom.lublin.pl/w-trakcie/"
-    base_url = "https://zoom.lublin.pl"
 
     info(f"Started diagnostics for: {url}")
 
@@ -47,56 +117,8 @@ def scrape_zoom_running():
 
     info("Started event search...")
     if config["zoom_running"]["enabled"]:
-        for event in tqdm(
-            event_elements,
-            desc="Szukanie...",
-            unit="event",
-            bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {unit} • {elapsed} elapsed • {remaining} remaining",
-            colour="green",
-            ascii=True,
-        ):
-            title_element = event.find("h3", class_="event-card__title")
-            link_element = event.find("a", class_="event-card__image-link")
-            place_element = event.find("div", class_="event-card__place")
-            time_element = event.find("div", class_="event-card__dates").find("span")
-            genre_element = event.find("div", class_="event-card__data-right").find("span")
+        data = run_parralel_scrape(event_elements)
 
-            title = title_element.text.strip() if title_element else None
-            link = link_element["href"] if link_element else None
-            if place_element:
-                place = (
-                    place_element.find("span").text.strip()
-                    if place_element.find("span")
-                    else None
-                )
-            else:
-                place = None
-            time = time_element.text.strip() if time_element else None
-            genre = genre_element.text.strip() if genre_element else None
-
-            link = link_element["href"] if link_element else None
-
-            event_data = {
-                "name": title,
-                "link": link,
-                "location": place,
-                "start_date": time,
-                "category": genre,
-                "cost": None,
-            }
-
-            if link:
-                link_response = requests.get(link, headers=headers)
-                if link_response.status_code == 200:
-                    link_soup = BeautifulSoup(link_response.content, "html.parser")
-                    bilety_element = link_soup.find("p", text="Bilety:")
-                    if bilety_element:
-                        bilety_text = bilety_element.find_next("p").text.strip()
-                        event_data["cost"] = bilety_text
-                else:
-                    error(f"Error while loading link: {link_response.status_code}")
-
-            data.append(event_data)
 
         if len(data) == 0:
             error("No events found")

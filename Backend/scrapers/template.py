@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 
 import requests
@@ -13,6 +14,34 @@ from utils.logmanager import error, info, success, warn
 # Scraping script for x site
 # id in config: script_id
 
+MAX_WORKERS = 20
+
+def _scrape_event(event):
+    # logic for scraping a single item
+    ...
+
+def _run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
+    results = []
+    if not event_list:
+        return results
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_event = {
+            executor.submit(_scrape_event, event): event for event in event_list
+        }
+        for future in tqdm(
+            as_completed(future_to_event),
+            total=len(event_list),
+            desc="Scraping events...",
+            unit="event",
+            bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} {unit} • {elapsed} elapsed • {remaining} remaining",
+            colour="green",
+            ascii=True,
+        ):
+            data = future.result()
+            if data:
+                results.append(data)
+
+        return results
 
 def _scrape_something():
     config = load_config()

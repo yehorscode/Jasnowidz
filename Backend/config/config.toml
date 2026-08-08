@@ -30,3 +30,7 @@ output = "zoom_events_running.json"
 [scrapers.labirynt_exhibitions]
 enabled = true
 output = "labirynt_exhibitions.json"
+
+[scrapers.labirynt_events]
+enabled = true
+output = "labirynt_events.json"
