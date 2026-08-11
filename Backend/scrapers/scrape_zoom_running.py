@@ -1,5 +1,5 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from bs4 import BeautifulSoup
@@ -15,13 +15,14 @@ from utils.pocketbase import create_record
 # Scraping script for zoom.lublin.pl running events
 # id in config: zoom_running
 
+
 def scrape_event(event):
     title_element = event.find("h3", class_="event-card__title")
     link_element = event.find("a", class_="event-card__image-link")
     place_element = event.find("div", class_="event-card__place")
     time_element = event.find("div", class_="event-card__dates").find("span")
     genre_element = event.find("div", class_="event-card__data-right").find("span")
-
+    image_link = event.find("img").get("src")
     title = title_element.text.strip() if title_element else None
     link = link_element["href"] if link_element else None
     if place_element:
@@ -35,7 +36,31 @@ def scrape_event(event):
     time = time_element.text.strip() if time_element else None
     genre = genre_element.text.strip() if genre_element else None
 
-    link = link_element["href"] if link_element else None
+    link = str(link_element["href"]) if link_element else "None"
+
+    expanded_event = requests.get(link, headers=headers)
+    cost = None
+    description = None
+
+    if link:
+        try:
+            link_response = requests.get(link, headers=headers, timeout=10)
+            if link_response.status_code == 200:
+                link_soup = BeautifulSoup(link_response.content, "html.parser")
+
+                single_content = link_soup.find("div", class_="single-content")
+                if single_content:
+                    p_tag = single_content.find("p")
+                    description = p_tag.text.strip() if p_tag else None
+
+                bilety_element = link_soup.find("p", string="Bilety:")
+                if bilety_element:
+                    next_p = bilety_element.find_next("p")
+                    cost = next_p.text.strip() if next_p else None
+            else:
+                error(f"Error while loading link ({link}): {link_response.status_code}")
+        except Exception as e:
+            error(f"Request failed for {link}: {e}")
 
     event_data = {
         "name": title,
@@ -43,23 +68,15 @@ def scrape_event(event):
         "location": place,
         "start_date": time,
         "category": genre,
-        "cost": None,
+        "cost": cost,
+        "image": image_link,
+        "description": description,
     }
-
-    if link:
-        link_response = requests.get(link, headers=headers)
-        if link_response.status_code == 200:
-            link_soup = BeautifulSoup(link_response.content, "html.parser")
-            bilety_element = link_soup.find("p", text="Bilety:")
-            if bilety_element:
-                bilety_text = bilety_element.find_next("p").text.strip()
-                event_data["cost"] = bilety_text
-        else:
-            error(f"Error while loading link: {link_response.status_code}")
-
     return event_data
 
-MAX_WORKERS = 100
+
+MAX_WORKERS = 150
+
 
 def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
     results = []
@@ -67,8 +84,7 @@ def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
         return results
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_event = {
-            executor.submit(scrape_event, event): event
-            for event in event_list
+            executor.submit(scrape_event, event): event for event in event_list
         }
         for future in tqdm(
             as_completed(future_to_event),
@@ -85,6 +101,7 @@ def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
 
         return results
 
+
 def scrape_zoom_running():
     config = load_config()
     config = config["scrapers"]
@@ -95,21 +112,23 @@ def scrape_zoom_running():
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
         error(f"Error while loading {url}: {response.status_code}")
-        return None
+        return
     else:
         success("Page workds")
 
     success("Diagnostics ended!")
-
 
     info(f"Started scraping: {url}")
 
     content = response.content
     soup = BeautifulSoup(content, "html.parser")
 
-    event_elements = soup.find("div", class_="archive-events__items").find_all(
-        "div", class_="event-card-wrapper"
-    )
+    event_elements = soup.find("div", class_="archive-events__items")
+
+    if event_elements:
+        event_elements = event_elements.find_all("div", class_="event-card-wrapper")
+    else:
+        event_elements = []
 
     info(f"Found {len(event_elements)} events.")
 
@@ -119,7 +138,6 @@ def scrape_zoom_running():
     if config["zoom_running"]["enabled"]:
         data = run_parralel_scrape(event_elements)
 
-
         if len(data) == 0:
             error("No events found")
         else:
@@ -127,7 +145,9 @@ def scrape_zoom_running():
 
         info("Event search ended.")
 
-        with open(f"./data/{config["zoom_running"]["output"]}", "w", encoding="utf-8") as f:
+        with open(
+            f"./data/{config['zoom_running']['output']}", "w", encoding="utf-8"
+        ) as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
         success("Saved data to JSON files.")
@@ -141,7 +161,7 @@ def upload_zoom_running():
     auth = pocketbaseLogin()
     token = auth.getAuthHeader()
     info("Uploading scraped (running events) data from zoom.lublin.eu/w-trakcie")
-    with open(f"./data/{config["zoom_running"]["output"]}", "r") as f:
+    with open(f"./data/{config['zoom_running']['output']}", "r") as f:
         events = json.load(f)
 
     for event in events:

@@ -14,7 +14,7 @@ def print_stats():
     total = 0
     for file in dir:
         if file.endswith("json"):
-            with open(path+file, "r") as f:
+            with open(path + file, "r") as f:
                 data = json.loads(f.read())
                 print(f"{Fore.CYAN}{file} - {len(data)} entries{Style.RESET_ALL}")
                 total += len(data)

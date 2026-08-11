@@ -1,8 +1,6 @@
-import json
-from typing import cast
+from typing import TypedDict, cast
 
 import requests
-from typing_extensions import Dict, TypedDict
 
 from utils.logmanager import error, info, success
 
@@ -37,6 +35,15 @@ class PocketbaseCollectionResponse(TypedDict):
     items: list[dict]
 
 
+def build_headers(
+    authorization: str | None = None, content_type: str = "application/json"
+) -> dict[str, str]:
+    headers = {"Content-Type": content_type}
+    if authorization:
+        headers["Authorization"] = authorization
+    return headers
+
+
 def get_collection(
     collection: str,
     page=1,
@@ -60,7 +67,6 @@ def get_collection(
         raise CollectionNotFoundError(f"Collection {collection} doesnt exist")
 
     request = f"{POCKETBASE_URL}/api/collections/{collection}/records"
-    headers = {"Authorization": authorization, "Content-Type": "application/json"}
     query_params = {
         k: v
         for k, v in {
@@ -71,7 +77,9 @@ def get_collection(
         }.items()
         if v is not None
     }
-    response = requests.get(request, headers=headers, params=query_params)
+    response = requests.get(
+        request, headers=build_headers(authorization), params=query_params
+    )
 
     if response.status_code == 200:
         return cast(PocketbaseCollectionResponse, response.json())
@@ -91,7 +99,7 @@ def get_collection(
 
 def get_record(
     collection: str, record_id: str, fields=None, authorization=None
-) -> Dict:
+) -> dict:
     """Gets a record from a collection by it's record_id
     Args:
         collection: str
@@ -111,14 +119,17 @@ def get_record(
         }.items()
         if v is not None
     }
-    headers = {"Authorization": authorization, "Content-Type": "application/json"}
     request = f"{POCKETBASE_URL}/api/collections/{collection}/records/{record_id}"
 
-    response = requests.get(request, headers=headers, params=query_params)
+    response = requests.get(
+        request,
+        headers=build_headers(authorization, "application/json"),
+        params=query_params,
+    )
 
     if response.status_code == 200:
         success(f"Successfully fetched record {record_id} from collection {collection}")
-        return cast(Dict, response.json())
+        return cast(dict, response.json())
     elif response.status_code == 403:
         raise CollectionOnlySuperusersError(
             f"Error 403, only superusers can access this action {response.request}"
@@ -138,19 +149,20 @@ def create_record(
     data: dict,
     authorization=None,
     content_type: str = "application/json",
-) -> Dict:
+) -> dict:
     if collection not in COLLECTIONS:
         raise CollectionNotFoundError(f"Collection {collection} doesnt exist")
 
-    headers = {"Content-Type": content_type, "Authorization": authorization}
     request = f"{POCKETBASE_URL}/api/collections/{collection}/records"
 
-    response = requests.post(request, headers=headers, json=data)
+    response = requests.post(
+        request, headers=build_headers(authorization, content_type), json=data
+    )
     if response.status_code == 200:
         success(
             f'Successfully created record {response.json()["id"]} at collection "{response.json()["collectionName"]}"'
         )
-        return cast(Dict, response.json())
+        return cast(dict, response.json())
     elif response.status_code == 403:
         raise CollectionOnlySuperusersError(
             f"Error 403, only superusers can access this action {response.request}"
@@ -169,10 +181,9 @@ def delete_record(record_id: str, collection: str, authorization=None) -> bool:
     if collection not in COLLECTIONS:
         raise CollectionNotFoundError(f"Collection {collection} doesn't exist")
 
-    headers = {"Authorization": authorization, "Content-Type": "None"}
     response = requests.delete(
         f"{POCKETBASE_URL}/api/collections/{collection}/records/{record_id}",
-        headers=headers,
+        headers=build_headers(authorization, "None"),
     )
     if response.status_code == 204:
         success(f"Record {record_id} from collection {collection} deleted")

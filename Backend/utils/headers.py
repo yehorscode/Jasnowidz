@@ -1,4 +1,6 @@
-headers = {
+from collections.abc import Mapping
+
+headers: Mapping[str, str] = {
     "User-Agent": "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
     "Accept-Language": "pl-PL,pl;q=0.9",
     "Accept-Encoding": "gzip, deflate, br, zstd",

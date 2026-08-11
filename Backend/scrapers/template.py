@@ -16,9 +16,11 @@ from utils.logmanager import error, info, success, warn
 
 MAX_WORKERS = 20
 
+
 def _scrape_event(event):
     # logic for scraping a single item
     ...
+
 
 def _run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
     results = []
@@ -42,6 +44,7 @@ def _run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
                 results.append(data)
 
         return results
+
 
 def _scrape_something():
     config = load_config()
@@ -75,6 +78,7 @@ def _scrape_something():
             colour="green",
             ascii=True,
         ):
+            ...
     else:
         warn("Scraping site_config_entryname is disabled in config")
 

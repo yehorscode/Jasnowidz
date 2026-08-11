@@ -46,6 +46,7 @@ def delete_all_records():
             except CollectionRequestError as e:
                 print(e)
 
+
 def delete_local_data():
     import os
     import shutil

@@ -46,7 +46,10 @@ def scrape_event(event, ev_type):
         # DURATION not date!!!! DD-MM-YYYY - DD-MM-YYYY (MM without zeros)
         event_duration = event_bs.find("p", class_="postContent__dateTitle")
         event_duration = event_duration.get_text(strip=True) if event_duration else None
-        start_date, end_date = parse_event_duration(event_duration)
+        if event_duration != None:
+            start_date, end_date = parse_event_duration(event_duration)
+        else:
+            start_date, end_date = None, None
         event_cost = None
         for box in event_bs.select("div.postContent__box"):
             title = box.select_one("p.postContent__boxTitle")
@@ -66,7 +69,8 @@ def scrape_event(event, ev_type):
             "start_date": start_date,
             "end_date": end_date,
             "cost": event_cost,
-            "place": event_place,
+            "location": event_place,
+            "category": "wystawa",
         }
     elif ev_type == "evnt":
         event_link = event.find("a", class_="futureEvent__img")
@@ -93,7 +97,10 @@ def scrape_event(event, ev_type):
         # DURATION not date!!!! DD-MM-YYYY - DD-MM-YYYY (MM without zeros)
         event_duration = event_bs.find("p", class_="futureEvent__date")
         event_duration = event_duration.get_text(strip=True) if event_duration else None
-        start_date, end_date = parse_event_duration(event_duration)
+        if event_duration != None:
+            start_date, end_date = parse_event_duration(event_duration)
+        else:
+            start_date, end_date = None, None
         event_cost = None
         for box in event_bs.select("div.postContent__box"):
             title = box.select_one("p.postContent__boxTitle")
@@ -113,25 +120,31 @@ def scrape_event(event, ev_type):
             "start_date": start_date,
             "end_date": end_date,
             "cost": event_cost,
-            "place": event_place,
+            "location": event_place,
+            "category": "wydarzenie",
         }
     return event_data
 
 
-def parse_event_duration(duration_str):
+def parse_event_duration(duration_str: str) -> tuple[str | None, str | None]:
     if not duration_str or " - " not in duration_str:
         return None, None
-
-    start_raw, end_raw = [part.strip() for part in duration_str.split(" - ")]
-
-    start_dt = datetime.strptime(start_raw, "%d-%m-%Y")
-    end_dt = datetime.strptime(end_raw, "%d-%m-%Y")
-
+    parts = duration_str.split(" - ")
+    if len(parts) != 2:
+        return None, None
     local_tz = ZoneInfo("Europe/Warsaw")
-    start_aware = start_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
-    end_aware = end_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
-
-    return start_aware.isoformat(), end_aware.isoformat()
+    try:
+        start_raw, end_raw = parts[0].strip(), parts[1].strip()
+        start_dt = datetime.strptime(start_raw, "%d-%m-%Y")
+        end_dt = datetime.strptime(end_raw, "%d-%m-%Y")
+        start_utc = start_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
+        end_utc = end_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
+        return (
+            start_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            end_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        )
+    except ValueError:
+        return None, None
 
 
 def run_parralel_scrape(event_list, event_type, max_workers=MAX_WORKERS):

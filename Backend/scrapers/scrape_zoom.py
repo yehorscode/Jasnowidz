@@ -1,5 +1,5 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
 from bs4 import BeautifulSoup
@@ -43,7 +43,11 @@ def scrape_event(event):
             link_soup = BeautifulSoup(link_response.content, "html.parser")
             bilety_element = link_soup.find("p", text="Bilety:")
             if bilety_element:
-                bilety_text = bilety_element.find_next("p").text.strip()
+                bilety_text = bilety_element.find_next("p")
+                if bilety_text:
+                    bilety_text = bilety_text.text.strip()
+                else:
+                    bilety_text = None
                 cost = bilety_text
             img_element = link_soup.find("img", class_="glightbox-hero-image")
             img_url = img_element["src"] if img_element else None
@@ -61,7 +65,9 @@ def scrape_event(event):
     }
     return event_data
 
+
 MAX_WORKERS = 50
+
 
 def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
     results = []
@@ -69,8 +75,7 @@ def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
         return results
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_event = {
-            executor.submit(scrape_event, event): event
-            for event in event_list
+            executor.submit(scrape_event, event): event for event in event_list
         }
         for future in tqdm(
             as_completed(future_to_event),
@@ -86,6 +91,7 @@ def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
                 results.append(data)
 
         return results
+
 
 def scrape_zoom():
     config = load_config()
@@ -108,9 +114,12 @@ def scrape_zoom():
     content = response.content
     soup = BeautifulSoup(content, "html.parser")
 
-    event_elements = soup.find("div", class_="archive-events__items").find_all(
-        "div", class_="event-card-wrapper"
-    )
+    event_elements = soup.find("div", class_="archive-events__items")
+    if event_elements is None:
+        error("No events found")
+        return
+    else:
+        event_elements.find_all("div", class_="event-card-wrapper")
 
     info(f"Found {len(event_elements)} events.")
 
