@@ -12,6 +12,7 @@ from utils.headers import headers
 from utils.logmanager import error, info, success, warn
 from utils.pocketbase import create_record
 
+MAX_WORKERS = 1
 
 # Scraping scripts for zoom.lublin.pl
 # id in config: zoom
@@ -65,10 +66,6 @@ def scrape_event(event):
     }
     return event_data
 
-
-MAX_WORKERS = 50
-
-
 def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
     results = []
     if not event_list:
@@ -119,7 +116,7 @@ def scrape_zoom():
         error("No events found")
         return
     else:
-        event_elements.find_all("div", class_="event-card-wrapper")
+        event_elements = event_elements.find_all("div", class_="event-card-wrapper")
 
     info(f"Found {len(event_elements)} events.")
 

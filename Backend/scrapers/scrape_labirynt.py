@@ -16,7 +16,7 @@ from utils.logmanager import error, info, success, warn
 # Scraping script for labirynt.com site
 # id in config: labirynt_exhibitions (for exhibitios) labirynt_events (for events)
 
-MAX_WORKERS = 50
+MAX_WORKERS = 5
 
 
 def scrape_event(event, ev_type):

@@ -75,7 +75,7 @@ def scrape_event(event):
     return event_data
 
 
-MAX_WORKERS = 150
+MAX_WORKERS = 5
 
 
 def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):

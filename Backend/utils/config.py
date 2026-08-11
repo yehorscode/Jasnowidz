@@ -11,9 +11,6 @@ COLLECTIONS = [
     "labirynt_wydarzenia",
 ]
 
-SOUND_ALARM = True
-
-
 def open_config():
     from colorama import Back, Fore, Style
 

@@ -14,7 +14,7 @@ from utils.logmanager import error, info, success, warn
 # Scraping script for x site
 # id in config: script_id
 
-MAX_WORKERS = 20
+MAX_WORKERS = 1
 
 
 def _scrape_event(event):

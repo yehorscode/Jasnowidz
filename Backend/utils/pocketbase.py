@@ -4,7 +4,7 @@ import requests
 
 from utils.logmanager import error, info, success
 
-from .config import COLLECTIONS, POCKETBASE_URL
+from .config import POCKETBASE_URL, load_config
 
 
 class CollectionRequestError(Exception):
@@ -16,7 +16,7 @@ class CollectionRecordNotFoundError(Exception):
 
 
 class CollectionNotFoundError(Exception):
-    """Collection isn't present in COLLECTIONS array"""
+    """Collection isn't present in collections array"""
 
 
 class CollectionOnlySuperusersError(Exception):
@@ -34,6 +34,14 @@ class PocketbaseCollectionResponse(TypedDict):
     totalItems: int
     items: list[dict]
 
+# config load
+cfg = load_config()
+collections = []
+if cfg.get("collections"):
+    collections: list = cfg.get("collections", [])
+else:
+    collections = []
+    error("No collections set in config")
 
 def build_headers(
     authorization: str | None = None, content_type: str = "application/json"
@@ -63,7 +71,7 @@ def get_collection(
     Returns:
         PocketbaseCollectionResponse
     """
-    if collection not in COLLECTIONS:
+    if collection not in collections:
         raise CollectionNotFoundError(f"Collection {collection} doesnt exist")
 
     request = f"{POCKETBASE_URL}/api/collections/{collection}/records"
@@ -109,7 +117,7 @@ def get_record(
     Returns:
         record: dict
     """
-    if collection not in COLLECTIONS:
+    if collection not in collections:
         raise CollectionNotFoundError(f"Collection {collection} doesnt exist")
 
     query_params = {
@@ -150,7 +158,7 @@ def create_record(
     authorization=None,
     content_type: str = "application/json",
 ) -> dict:
-    if collection not in COLLECTIONS:
+    if collection not in collections:
         raise CollectionNotFoundError(f"Collection {collection} doesnt exist")
 
     request = f"{POCKETBASE_URL}/api/collections/{collection}/records"
@@ -178,7 +186,7 @@ def create_record(
 
 
 def delete_record(record_id: str, collection: str, authorization=None) -> bool:
-    if collection not in COLLECTIONS:
+    if collection not in collections:
         raise CollectionNotFoundError(f"Collection {collection} doesn't exist")
 
     response = requests.delete(
