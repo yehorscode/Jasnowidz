@@ -9,8 +9,8 @@ from tqdm import *
 from commands.auth import pocketbaseLogin
 from utils.config import load_config
 from utils.headers import headers
-from utils.logmanager import error, info, success, user_input, warn
-from utils.pocketbase import create_record
+from utils.logmanager import error, info, success, warn
+from utils.pocketbase import create_record, gen_hash
 
 # Scraping script for zoom.lublin.pl running events
 # id in config: zoom_running
@@ -71,6 +71,9 @@ def scrape_event(event):
         "cost": cost,
         "image": image_link,
         "description": description,
+        "source": "zoom",
+        "type": "running",
+        "fingerprint": gen_hash(link, title, "zoom_running")
     }
     return event_data
 
@@ -114,7 +117,7 @@ def scrape_zoom_running():
         error(f"Error while loading {url}: {response.status_code}")
         return
     else:
-        success("Page workds")
+        success("Page works")
 
     success("Diagnostics ended!")
 

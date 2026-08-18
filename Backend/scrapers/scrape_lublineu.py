@@ -12,7 +12,7 @@ from commands.auth import pocketbaseLogin
 from utils.config import load_config
 from utils.headers import headers
 from utils.logmanager import error, info, success, user_input, warn
-from utils.pocketbase import create_record
+from utils.pocketbase import create_record, gen_hash
 
 # Scraping script for lublin.eu
 # id in config: lublineu (main events), lublineu_running (for running/ongoing events)
@@ -156,6 +156,9 @@ def scrape_lublineu():
                 else "No data",
                 "link": full_event_url,
                 "image": img_link,
+                "source": "lublin_eu",
+                "type": "event",
+                "fingerprint": gen_hash(full_event_url, event_title, "lublin_eu")
             }
 
             data.append(event_data)
@@ -279,6 +282,9 @@ def scrape_lublineu():
                         "organizer": event_organizer,
                         "participation": event_participation,
                         "category": event_category,
+                        "source": "lublin_eu",
+                        "type": "running_event",
+                        "fingerprint": gen_hash(link=f"https://lublin.eu{event_url}", name=event_title, source="lublin_eu")
                     }
                     cykliczne_data.append(event_data)
 

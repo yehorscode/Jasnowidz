@@ -41,7 +41,7 @@ def scrape_event(event, ev_type):
 
         # this is basically the description + some additional data
         event_description = event_bs.find("div", class_="wysiwyg")
-        event_place = event.find("p", class_="postContent__dateTitle")
+        event_place = event.find("p", class_="placeEvent-index")
         event_place = event_place.get_text(strip=True) if event_place else None
         # DURATION not date!!!! DD-MM-YYYY - DD-MM-YYYY (MM without zeros)
         event_duration = event_bs.find("p", class_="postContent__dateTitle")
@@ -70,7 +70,9 @@ def scrape_event(event, ev_type):
             "end_date": end_date,
             "cost": event_cost,
             "location": event_place,
-            "category": "wystawa",
+            "type": "exhibition",
+            "source": "labirynt",
+            "fingerprint": pocketbase.gen_hash(event_link, event_name, "labirynt"),
         }
     elif ev_type == "evnt":
         event_link = event.find("a", class_="futureEvent__img")
@@ -110,10 +112,13 @@ def scrape_event(event, ev_type):
                     event_cost = cost_text.get_text(strip=True)
                 break
 
+        if event_cost == "":
+            event_cost = None
+
         event_data = {
             "name": event_name,
             "link": event_link,
-            "img": event_img,
+            "imgage": event_img,
             "description": event_description.get_text(strip=True)
             if event_description
             else None,
@@ -121,7 +126,9 @@ def scrape_event(event, ev_type):
             "end_date": end_date,
             "cost": event_cost,
             "location": event_place,
-            "category": "wydarzenie",
+            "type": "event",
+            "source": "labirynt",
+            "fingerprint": pocketbase.gen_hash(event_link, event_name, "labirynt"),
         }
     return event_data
 

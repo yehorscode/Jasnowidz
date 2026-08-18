@@ -10,9 +10,10 @@ from commands.auth import pocketbaseLogin
 from utils.config import load_config
 from utils.headers import headers
 from utils.logmanager import error, info, success, warn
-from utils.pocketbase import create_record
+from utils.pocketbase import create_record, gen_hash
 
 MAX_WORKERS = 1
+
 
 # Scraping scripts for zoom.lublin.pl
 # id in config: zoom
@@ -63,8 +64,12 @@ def scrape_event(event):
         "category": genre,
         "cost": cost,
         "image": img_url,
+        "source": "zoom",
+        "type": "event",
+        "fingerprint": gen_hash(link, title, "zoom")
     }
     return event_data
+
 
 def run_parralel_scrape(event_list, max_workers=MAX_WORKERS):
     results = []

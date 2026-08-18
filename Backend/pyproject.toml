@@ -12,3 +12,6 @@ dependencies = [
     "requests>=2.34.2",
     "tqdm>=4.68.2",
 ]
+
+[tool.pyright]
+typeCheckingMode = "standard"

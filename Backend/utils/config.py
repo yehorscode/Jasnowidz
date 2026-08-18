@@ -11,6 +11,7 @@ COLLECTIONS = [
     "labirynt_wydarzenia",
 ]
 
+
 def open_config():
     from colorama import Back, Fore, Style
 

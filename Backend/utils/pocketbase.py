@@ -34,6 +34,7 @@ class PocketbaseCollectionResponse(TypedDict):
     totalItems: int
     items: list[dict]
 
+
 # config load
 cfg = load_config()
 collections = []
@@ -42,6 +43,17 @@ if cfg.get("collections"):
 else:
     collections = []
     error("No collections set in config")
+
+import hashlib
+
+
+def gen_hash(link, name, source: str) -> str:
+    normalized = f"{name.strip().lower()}|{link}"
+    hash = hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
+    hash = source + "_" + hash
+    # info(f"Generated hash {hash}")
+    return f"{hash}"
+
 
 def build_headers(
     authorization: str | None = None, content_type: str = "application/json"
