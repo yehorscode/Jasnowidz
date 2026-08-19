@@ -33,6 +33,7 @@ def scrape_event(event):
         )
     else:
         place = None
+
     time = time_element.text.strip() if time_element else None
     genre = genre_element.text.strip() if genre_element else None
 
@@ -73,7 +74,7 @@ def scrape_event(event):
         "description": description,
         "source": "zoom",
         "type": "running",
-        "fingerprint": gen_hash(link, title, "zoom_running")
+        "fingerprint": gen_hash(link, title, time, "zoom_running"),
     }
     return event_data
 

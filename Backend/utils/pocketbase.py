@@ -27,6 +27,10 @@ class CollectionCreateRecordError(Exception):
     """Missing required values"""
 
 
+class CollectionBatchError(Exception):
+    """Something went wrong while processing a batch request"""
+
+
 class PocketbaseCollectionResponse(TypedDict):
     page: int
     perPage: int
@@ -47,8 +51,8 @@ else:
 import hashlib
 
 
-def gen_hash(link, name, source: str) -> str:
-    normalized = f"{name.strip().lower()}|{link}"
+def gen_hash(link, name, start_date, source: str) -> str:
+    normalized = f"{name.strip().lower()}|{start_date}|{link}"
     hash = hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
     hash = source + "_" + hash
     # info(f"Generated hash {hash}")
@@ -64,6 +68,7 @@ def build_headers(
     return headers
 
 
+# list/search collection
 def get_collection(
     collection: str,
     page=1,
@@ -148,7 +153,7 @@ def get_record(
     )
 
     if response.status_code == 200:
-        success(f"Successfully fetched record {record_id} from collection {collection}")
+        # success(f"Successfully fetched record {record_id} from collection {collection}")
         return cast(dict, response.json())
     elif response.status_code == 403:
         raise CollectionOnlySuperusersError(
@@ -179,9 +184,9 @@ def create_record(
         request, headers=build_headers(authorization, content_type), json=data
     )
     if response.status_code == 200:
-        success(
-            f'Successfully created record {response.json()["id"]} at collection "{response.json()["collectionName"]}"'
-        )
+        # success(
+        #     f'Successfully created record {response.json()["id"]} at collection "{response.json()["collectionName"]}"'
+        # )
         return cast(dict, response.json())
     elif response.status_code == 403:
         raise CollectionOnlySuperusersError(

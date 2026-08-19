@@ -62,7 +62,7 @@ def scrape_event(event, ev_type):
         event_data = {
             "name": event_name,
             "link": event_link,
-            "img": event_img,
+            "image": event_img,
             "description": event_description.get_text(strip=True)
             if event_description
             else None,
@@ -72,7 +72,9 @@ def scrape_event(event, ev_type):
             "location": event_place,
             "type": "exhibition",
             "source": "labirynt",
-            "fingerprint": pocketbase.gen_hash(event_link, event_name, "labirynt"),
+            "fingerprint": pocketbase.gen_hash(
+                event_link, event_name, start_date, "labirynt"
+            ),
         }
     elif ev_type == "evnt":
         event_link = event.find("a", class_="futureEvent__img")
@@ -118,7 +120,7 @@ def scrape_event(event, ev_type):
         event_data = {
             "name": event_name,
             "link": event_link,
-            "imgage": event_img,
+            "image": event_img,
             "description": event_description.get_text(strip=True)
             if event_description
             else None,
@@ -128,7 +130,9 @@ def scrape_event(event, ev_type):
             "location": event_place,
             "type": "event",
             "source": "labirynt",
-            "fingerprint": pocketbase.gen_hash(event_link, event_name, "labirynt"),
+            "fingerprint": pocketbase.gen_hash(
+                event_link, event_name, start_date, "labirynt"
+            ),
         }
     return event_data
 

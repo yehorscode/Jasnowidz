@@ -66,7 +66,7 @@ def scrape_event(event):
         "image": img_url,
         "source": "zoom",
         "type": "event",
-        "fingerprint": gen_hash(link, title, "zoom")
+        "fingerprint": gen_hash(link, title, time, "zoom"),
     }
     return event_data
 

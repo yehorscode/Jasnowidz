@@ -5,17 +5,30 @@ from colorama import Back, Fore, Style
 from scrapers.scrape_lublineu import upload_lublineu
 from scrapers.scrape_zoom import upload_zoom
 from scrapers.scrape_zoom_running import upload_zoom_running
+from upload.upload_merge import upload_merge
 from utils.config import COLLECTIONS
 from utils.logmanager import *
 
 
 def dummy():
-    # onlt for usage with the dummy things that arent yet finished
+    # only for usage with the dummy things that arent yet finished
     ...
 
 
 def upload_select():
-    print(f"\n{Fore.LIGHTMAGENTA_EX}Select what to upload{Style.RESET_ALL}:")
+    print(f"\n{Fore.LIGHTMAGENTA_EX}Uploading menu{Style.RESET_ALL}:")
+    print(
+        f"{Fore.LIGHTMAGENTA_EX}1{Style.RESET_ALL} - upload files to merged collection"
+    )
+    print(f"{Fore.LIGHTMAGENTA_EX}2{Style.RESET_ALL} - upload to per site collections")
+    answ = input(f"{Fore.LIGHTMAGENTA_EX}Select action: {Style.RESET_ALL}")
+    if answ == "1":
+        upload_merge()
+    elif answ == "2":
+        upload_individual()
+
+
+def upload_individual():
     sources = {
         "lublin_eu_cykliczne.json": dummy,
         "lublin_eu_data.json": upload_lublineu,
