@@ -1,26 +1,28 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-accent: oklch(0.5921 0.1672 20.1);
-  --color-background: var(--color-background);
-  --color-foreground: var(--color-foreground);
+  --color-background: var(--app-background);
+  --color-foreground: var(--app-foreground);
 }
 
 :root {
-  --color-background: #FFFFF0;
-  --color-foreground: black;
+  --app-background: #fffff0;
+  --app-foreground: #000000;
 }
 
 .dark {
-  --color-background: black;
-  --color-foreground: white;
+  --app-background: #000000;
+  --app-foreground: #ffffff;
 }
 
 button {
-  @apply hover:cursor-pointer
+  @apply hover:cursor-pointer;
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: var(--app-background);
+  color: var(--app-foreground);
 }
