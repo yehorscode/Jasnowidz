@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-accent: oklch(0.5921 0.1672 20.1);
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+}
+
+:root {
+  --color-background: #FFFFF0;
+  --color-foreground: black;
+}
+
+.dark {
+  --color-background: black;
+  --color-foreground: white;
+}
+
+button {
+  @apply hover:cursor-pointer
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}

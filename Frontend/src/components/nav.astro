@@ -1,0 +1,38 @@
+---
+import "@/styles/global.css";
+---
+
+<div class="flex gap-3 text-xl border-b-2 border-accent">
+  <a href="/" class="bg-accent text-white px-2">Jasnowidz</a>
+  <a href="/events">Events</a>
+  <div class="ml-auto">
+    <button
+      id="theme-switch"
+      class="bg-black text-white dark:bg-[#FFFFF0] dark:text-black px-2"
+    >
+      <span class="inline dark:hidden">Dark mode</span>
+      <span class="hidden dark:inline">Light mode</span>
+    </button>
+  </div>
+  <script>
+    const savedTheme = localStorage.getItem("theme");
+    if (
+      savedTheme === "dark" ||
+      (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    const switch_btn = document.getElementById("theme-switch");
+    switch_btn?.addEventListener("click", () => {
+      if (document.documentElement.classList.contains("dark")) {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      } else {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      }
+    });
+  </script>
+</div>

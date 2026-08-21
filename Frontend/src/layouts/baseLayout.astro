@@ -1,0 +1,41 @@
+---
+import Navigation from "@/components/nav.astro";
+const { title } = Astro.props;
+import "@/styles/global.css";
+---
+
+<html lang="en" class="p-10">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <script is:inline>
+      const theme = (() => {
+        if (localStorage.getItem("theme") == "dark") {
+          return "dark";
+        }
+        if (localStorage.getItem("theme") == "light") {
+          return "light";
+        }
+        if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          return "dark";
+        }
+        return "light";
+      })();
+      if (theme === "dark") {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    </script>
+  </head>
+
+  <body>
+    <Navigation />
+    <main class="flex flex-col mt-2">
+      <slot />
+    </main>
+  </body>
+</html>
