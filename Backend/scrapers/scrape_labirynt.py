@@ -16,7 +16,7 @@ from utils.logmanager import error, info, success, warn
 # Scraping script for labirynt.com site
 # id in config: labirynt_exhibitions (for exhibitios) labirynt_events (for events)
 
-MAX_WORKERS = 5
+MAX_WORKERS = 1
 
 
 def scrape_event(event, ev_type):
@@ -77,6 +77,7 @@ def scrape_event(event, ev_type):
             ),
         }
     elif ev_type == "evnt":
+        # TODO: implement HCai scraping for start end dates
         event_link = event.find("a", class_="futureEvent__img")
         event_link = event_link["href"] if event_link else None
         img_tag = event.select_one("a.futureEvent__img img")
@@ -91,20 +92,38 @@ def scrape_event(event, ev_type):
         if event_name:
             event_name = event_name.find("a")
             event_name = event_name.text if event_name else None
+
         full_event = requests.get(str(event_link), headers=headers)
         event_bs = BeautifulSoup(full_event.content, "html.parser")
 
-        # this is basically the description + some additional data
         event_description = event_bs.find("div", class_="wysiwyg")
         event_place = event.find("p", class_="placeEvent-index")
         event_place = event_place.get_text(strip=True) if event_place else None
-        # DURATION not date!!!! DD-MM-YYYY - DD-MM-YYYY (MM without zeros)
-        event_duration = event_bs.find("p", class_="futureEvent__date")
-        event_duration = event_duration.get_text(strip=True) if event_duration else None
-        if event_duration != None:
-            start_date, end_date = parse_event_duration(event_duration)
-        else:
-            start_date, end_date = None, None
+
+        # FIXED DATE PARSING
+        event_duration = None
+        date_p = event_bs.find("p", class_="futureEvent__date")
+        date_p = date_p.get_text() if date_p else None
+        print(event_link)
+        print(date_p)
+
+        if event_duration is None:
+            event_duration = "brak daty"
+
+        start_date = None
+        end_date = None
+        if " - " in event_duration:
+            start_str, end_str = event_duration.split(" - ", 1)
+            try:
+                start_date = datetime.fromisoformat(
+                    start_str.replace("Z", "+00:00")
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+                end_date = datetime.fromisoformat(
+                    end_str.replace("Z", "+00:00")
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            except ValueError:
+                pass
+
         event_cost = None
         for box in event_bs.select("div.postContent__box"):
             title = box.select_one("p.postContent__boxTitle")
@@ -113,7 +132,6 @@ def scrape_event(event, ev_type):
                 if cost_text:
                     event_cost = cost_text.get_text(strip=True)
                 break
-
         if event_cost == "":
             event_cost = None
 
@@ -146,8 +164,15 @@ def parse_event_duration(duration_str: str) -> tuple[str | None, str | None]:
     local_tz = ZoneInfo("Europe/Warsaw")
     try:
         start_raw, end_raw = parts[0].strip(), parts[1].strip()
-        start_dt = datetime.strptime(start_raw, "%d-%m-%Y")
-        end_dt = datetime.strptime(end_raw, "%d-%m-%Y")
+        for fmt in "%d-%m-%Y":
+            try:
+                start_dt = datetime.strptime(start_raw, fmt)
+                end_dt = datetime.strptime(end_raw, fmt)
+                break
+            except ValueError:
+                continue
+        else:
+            return None, None
         start_utc = start_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
         end_utc = end_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
         return (

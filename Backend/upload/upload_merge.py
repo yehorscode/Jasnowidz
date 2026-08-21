@@ -60,7 +60,9 @@ def load_files():
 
 def _get_cur_data(token, page=1) -> PocketbaseCollectionResponse:
     try:
-        return get_collection(collection="events", authorization=token, page=page, perPage=500)
+        return get_collection(
+            collection="events", authorization=token, page=page, perPage=500
+        )
     except CollectionRequestError as e:
         warn(e)
         return {"page": 0, "items": [], "perPage": 0, "totalItems": 0, "totalPages": 0}
@@ -73,6 +75,7 @@ def _get_existing_fingerprints(data):
             existing_fingerprints.add(item["fingerprint"])
     return existing_fingerprints
 
+
 def _clean_payload(event: dict) -> dict:
     cleaned = {}
     for key, value in event.items():
@@ -81,6 +84,7 @@ def _clean_payload(event: dict) -> dict:
             continue
         cleaned[key] = value
     return cleaned
+
 
 def upload_merge():
     auth = pocketbaseLogin()
@@ -112,15 +116,16 @@ def upload_merge():
     failed = 0
     for event in tqdm(input_data, desc="Uploading events", colour="GREEN"):
         if event["fingerprint"] in existing_fingerprints:
-            skipped+=1
+            skipped += 1
             continue
         try:
-
             create_record(collection="events", data=event, authorization=token)
-            uploaded+=1
+            uploaded += 1
         except Exception as e:
             # Extract PocketBase's detailed validation breakdown
             error_details = getattr(e, "data", getattr(e, "response", str(e)))
             error(f"Failed to upload event {event.get('name')}: {error_details}")
             failed += 1
-    print(f"{Fore.GREEN}Uploaded {uploaded}{Style.RESET_ALL},{Fore.YELLOW} Skipped {skipped}{Style.RESET_ALL},{Fore.RED} Failed {failed}{Style.RESET_ALL}")
+    print(
+        f"{Fore.GREEN}Uploaded {uploaded}{Style.RESET_ALL},{Fore.YELLOW} Skipped {skipped}{Style.RESET_ALL},{Fore.RED} Failed {failed}{Style.RESET_ALL}"
+    )
