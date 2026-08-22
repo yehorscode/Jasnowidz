@@ -4,7 +4,7 @@ const { title } = Astro.props;
 import "@/styles/global.css";
 ---
 
-<html lang="en" class="p-10">
+<html lang="en" class="p-10 min-w-screen min-h-screen">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -32,10 +32,12 @@ import "@/styles/global.css";
     </script>
   </head>
 
-  <body>
-    <Navigation />
-    <main class="flex flex-col mt-2">
-      <slot />
-    </main>
+  <body class="flex flex-col items-center w-full min-h-screen">
+    <div class="mx-auto max-w-4xl">
+      <Navigation />
+      <main class="flex flex-col mt-2">
+        <slot />
+      </main>
+    </div>
   </body>
 </html>

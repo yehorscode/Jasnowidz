@@ -1,0 +1,54 @@
+---
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  baseUrl?: string;
+}
+const { currentPage, totalPages, baseUrl = Astro.url.pathname } = Astro.props;
+const getPageUrl = (page: number) => {
+  const url = new URL(Astro.url);
+  url.pathname = baseUrl;
+  url.searchParams.set("page", String(page));
+  return url.search;
+};
+---
+
+{
+  totalPages > 1 && (
+    <nav class="flex gap-2">
+      {currentPage > 1 && (
+        <a class="bg-accent px-2 text-white" href={getPageUrl(currentPage - 1)}>
+          Previous
+        </a>
+      )}
+      {currentPage === 1 && <a class="opacity-50 text-foreground px-2 hover:cursor-not-allowed">Previous</a>}
+      {currentPage < totalPages && (
+        <a class="bg-accent px-2 text-white" href={getPageUrl(currentPage + 1)}>
+          Next
+        </a>
+      )}
+      {currentPage == totalPages && (
+        <a class="opacity-50 text-foreground px-2 hover:cursor-not-allowed">
+          Next
+        </a>
+      )}
+      <span>Navigate pages</span>
+      <div class="ml-auto">
+        <form action={baseUrl} method="get">
+          <label for="page-input" class="sr-only">Go to page</label>
+          <input
+            type="number"
+            name="page"
+            placeholder="Go to page..."
+            value={currentPage}
+            class="border-none focus:border-none"
+            max={totalPages}
+            min=1
+            id="page-input"
+          />
+          <button type="submit" class="sr-only">Go</button>
+        </form>
+      </div>
+    </nav>
+  )
+}

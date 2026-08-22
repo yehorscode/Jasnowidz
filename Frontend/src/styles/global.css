@@ -26,3 +26,8 @@ body {
   background-color: var(--app-background);
   color: var(--app-foreground);
 }
+
+
+textarea:focus, input:focus{
+    outline: none;
+}

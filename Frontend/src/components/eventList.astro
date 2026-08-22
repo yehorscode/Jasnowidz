@@ -1,0 +1,54 @@
+---
+import ExternalLink from "@/assets/external-link.svg";
+import CalendarClock from "@/assets/calendar-clock.svg";
+import CalendarX from "@/assets/calendar-x-2.svg";
+import { pb } from "@/lib/pocketbase";
+import Pagination from "@/components/pagination.astro";
+const currentPage = Number(Astro.url.searchParams.get("page") || 1);
+const perPage = 15;
+const response = await pb.collection("events").getList(currentPage, perPage);
+const { items: events, totalPages } = response;
+---
+
+<ul class="flex flex-col gap-3">
+  <Pagination totalPages={totalPages} currentPage={currentPage} />
+  {
+    events &&
+      events.map((event) => (
+        <li class="border-accent border-2 p-2">
+          <img
+            src={event.image || "https://placehold.co/600x400"}
+            loading="lazy"
+            class="w-full h-100 object-cover"
+          />
+          <div class="mt-2 flex flex-col gap-1">
+            <h2 class="text-lg font-semibold">{event.name}</h2>
+            <span class="flex gap-2 items-center">
+              <CalendarClock width={20} />
+              Starts at:{" "}
+              {(event.start_date &&
+                new Date(event.start_date).toLocaleString()) || (
+                <span>N/A</span>
+              )}
+            </span>
+            {event.end_date && (
+              <span class="flex gap-2 items-center">
+                <CalendarX width={20} />
+                Ends at: {new Date(event.end_date).toLocaleDateString()}
+              </span>
+            )}
+            <a href={event.link} class="flex gap-2 items-center underline">
+              <ExternalLink width={20} />
+              {event.link}
+            </a>
+            {event.source === "labirynt" && (
+              <span class="bg-yellow-500 w-fit px-3">
+                Warning! Labirynt scraper reports wrong start/end dates.
+              </span>
+            )}
+          </div>
+        </li>
+      ))
+  }
+  {events.length === 0 && <li>Loading</li>}
+</ul>
