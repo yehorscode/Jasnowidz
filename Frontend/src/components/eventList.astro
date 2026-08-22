@@ -2,6 +2,7 @@
 import ExternalLink from "@/assets/external-link.svg";
 import CalendarClock from "@/assets/calendar-clock.svg";
 import CalendarX from "@/assets/calendar-x-2.svg";
+import MapPin from "@/assets/map-pin.svg";
 import { pb } from "@/lib/pocketbase";
 import Pagination from "@/components/pagination.astro";
 const currentPage = Number(Astro.url.searchParams.get("page") || 1);
@@ -21,8 +22,8 @@ const { items: events, totalPages } = response;
             loading="lazy"
             class="w-full h-100 object-cover"
           />
-          <div class="mt-2 flex flex-col gap-1">
-            <h2 class="text-lg font-semibold">{event.name}</h2>
+          <div class="mt-5 text-lg flex flex-col gap-1">
+            <h2 class="text-xl font-semibold">{event.name}</h2>
             <span class="flex gap-2 items-center">
               <CalendarClock width={20} />
               Starts at:{" "}
@@ -37,12 +38,18 @@ const { items: events, totalPages } = response;
                 Ends at: {new Date(event.end_date).toLocaleDateString()}
               </span>
             )}
+            {event.location && (
+              <span class="flex gap-2 items-center">
+                <MapPin width={20} />
+                At: {event.location}
+              </span>
+            )}
             <a href={event.link} class="flex gap-2 items-center underline">
               <ExternalLink width={20} />
               {event.link}
             </a>
             {event.source === "labirynt" && (
-              <span class="bg-yellow-500 w-fit px-3 text-black">
+              <span class="bg-yellow-500 text-xs mt-2 w-fit px-3 text-black">
                 Warning! Labirynt scraper reports wrong start/end dates.
               </span>
             )}
@@ -51,4 +58,5 @@ const { items: events, totalPages } = response;
       ))
   }
   {events.length === 0 && <li>Loading</li>}
+  <Pagination totalPages={totalPages} currentPage={currentPage} />
 </ul>

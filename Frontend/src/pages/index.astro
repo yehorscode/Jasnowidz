@@ -4,5 +4,20 @@ import EventList from "@/components/eventList.astro";
 ---
 
 <Layout>
+  <div class="w-full p-3 text-white bg-accent my-5">
+    <span
+      >Hey, welcome to Jasnowidz (<i>eng: seer, soothsayer, psychic</i>)<br
+      />Right now you are looking at around 1200+ events scraped from 3 sites:
+      lublin.eu, zoom.lublin.pl and labirynt.com. <br /> I'm trying to improve the
+      data quality but it's really hard because some sites (labirynt) have very different
+      ways of handling dates for example, and its very hard to scrape that (i plan
+      to scrape the dates with ai), but anyways <br />
+      <br />
+      This list is not complete and the site was made pretty fast (yet to improve).
+      <br />
+      For reviewers: https://github.com/yehorscode/jasnowidz (Backend/ for python
+      backend scripts and Frontend/ for this site's source)
+    </span>
+  </div>
   <EventList />
 </Layout>
