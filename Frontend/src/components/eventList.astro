@@ -3,6 +3,7 @@ import ExternalLink from "@/assets/external-link.svg";
 import CalendarClock from "@/assets/calendar-clock.svg";
 import CalendarX from "@/assets/calendar-x-2.svg";
 import MapPin from "@/assets/map-pin.svg";
+import NoImgFallback from "@/assets/no-img.webp";
 import { pb } from "@/lib/pocketbase";
 import Pagination from "@/components/pagination.astro";
 const currentPage = Number(Astro.url.searchParams.get("page") || 1);
@@ -18,7 +19,7 @@ const { items: events, totalPages } = response;
       events.map((event) => (
         <li class="border-accent border-2 p-2">
           <img
-            src={event.image || "https://placehold.co/600x400"}
+            src={event.image || { NoImgFallback }}
             loading="lazy"
             class="w-full h-100 object-cover"
           />
@@ -44,6 +45,9 @@ const { items: events, totalPages } = response;
                 At: {event.location}
               </span>
             )}
+            <span>
+              Cost {event.cost}, fingerprint {event.fingerprint}
+            </span>
             <a href={event.link} class="flex gap-2 items-center underline">
               <ExternalLink width={20} />
               {event.link}
