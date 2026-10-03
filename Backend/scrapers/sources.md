@@ -12,3 +12,7 @@ zoom - zoom.lublin.pl
   - type
     - running - old + ongoing + future events that last more then a day
     - event - old + future events that will start at set time
+
+good models:
+- ~deepseek/deepseek-v4-flash-latest (cheapest)
+- openai/gpt-4o-mini

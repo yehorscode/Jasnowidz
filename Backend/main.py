@@ -62,6 +62,10 @@ def checkFolders():
         error("/data doesn't exist")
         os.makedirs("./data")
         success("Created /data")
+    if not os.path.exists("./cache"):
+        error("/cache doesn't exist")
+        os.makedirs("./cache")
+        success("Created /cache")
 
 
 if __name__ == "__main__":

@@ -1,25 +1,41 @@
 import json
+import random
+import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
+from openrouter import OpenRouter
 from tqdm import tqdm
 
 from commands.auth import pocketbaseLogin
 from utils import pocketbase
-from utils.config import load_config
+from utils.check_ratelimit import check_ratelimit
+from utils.config import (
+    AI_URL,
+    get_ratelimit_count,
+    increment_ratelimit,
+    load_cache,
+    load_config,
+    load_env,
+    save_cache,
+)
 from utils.headers import headers
 from utils.logmanager import error, info, success, warn
 
 # Scraping script for labirynt.com site
 # id in config: labirynt_exhibitions (for exhibitios) labirynt_events (for events)
 
-MAX_WORKERS = 1
+MAX_WORKERS = 20
 
 
-def scrape_event(event, ev_type):
+last_parsed_event = 0
+
+
+def scrape_event(event, ev_type, router):
     event_data = {}
     if ev_type == "exhb":
         event_link = event.find("a", class_="futureEvent__img")
@@ -46,10 +62,7 @@ def scrape_event(event, ev_type):
         # DURATION not date!!!! DD-MM-YYYY - DD-MM-YYYY (MM without zeros)
         event_duration = event_bs.find("p", class_="postContent__dateTitle")
         event_duration = event_duration.get_text(strip=True) if event_duration else None
-        if event_duration != None:
-            start_date, end_date = parse_event_duration(event_duration)
-        else:
-            start_date, end_date = None, None
+        # start_date, end_date = parse_event_duration(event_duration, router)
         event_cost = None
         for box in event_bs.select("div.postContent__box"):
             title = box.select_one("p.postContent__boxTitle")
@@ -66,14 +79,15 @@ def scrape_event(event, ev_type):
             "description": event_description.get_text(strip=True)
             if event_description
             else None,
-            "start_date": start_date,
-            "end_date": end_date,
+            # "start_date": start_date,
+            # "end_date": end_date,
             "cost": event_cost,
             "location": event_place,
             "type": "exhibition",
             "source": "labirynt",
+            "event_duration": event_duration.strip("\n").strip(),
             "fingerprint": pocketbase.gen_hash(
-                event_link, event_name, start_date, "labirynt"
+                event_link, event_name, event_duration, "labirynt"
             ),
         }
     elif ev_type == "evnt":
@@ -102,27 +116,14 @@ def scrape_event(event, ev_type):
 
         # FIXED DATE PARSING
         event_duration = None
-        date_p = event_bs.find("p", class_="futureEvent__date")
-        date_p = date_p.get_text() if date_p else None
-        print(event_link)
-        print(date_p)
+        date_p = event.find("p", class_="futureEvent__date")
+        event_duration = date_p.get_text() if date_p else None
 
         if event_duration is None:
             event_duration = "brak daty"
 
-        start_date = None
-        end_date = None
-        if " - " in event_duration:
-            start_str, end_str = event_duration.split(" - ", 1)
-            try:
-                start_date = datetime.fromisoformat(
-                    start_str.replace("Z", "+00:00")
-                ).strftime("%Y-%m-%dT%H:%M:%SZ")
-                end_date = datetime.fromisoformat(
-                    end_str.replace("Z", "+00:00")
-                ).strftime("%Y-%m-%dT%H:%M:%SZ")
-            except ValueError:
-                pass
+        # start_date, end_date = parse_event_duration(event_duration, router)
+        # print(f"EVENT FUNC {start_date}, {end_date}")
 
         event_cost = None
         for box in event_bs.select("div.postContent__box"):
@@ -142,54 +143,38 @@ def scrape_event(event, ev_type):
             "description": event_description.get_text(strip=True)
             if event_description
             else None,
-            "start_date": start_date,
-            "end_date": end_date,
+            # "start_date": start_date,
+            # "end_date": end_date,
             "cost": event_cost,
             "location": event_place,
             "type": "event",
             "source": "labirynt",
+            "event_duration": event_duration.strip("\n").strip(),
             "fingerprint": pocketbase.gen_hash(
-                event_link, event_name, start_date, "labirynt"
+                event_link, event_name, event_duration, "labirynt"
             ),
         }
     return event_data
 
 
-def parse_event_duration(duration_str: str) -> tuple[str | None, str | None]:
-    if not duration_str or " - " not in duration_str:
-        return None, None
-    parts = duration_str.split(" - ")
-    if len(parts) != 2:
-        return None, None
-    local_tz = ZoneInfo("Europe/Warsaw")
-    try:
-        start_raw, end_raw = parts[0].strip(), parts[1].strip()
-        for fmt in "%d-%m-%Y":
-            try:
-                start_dt = datetime.strptime(start_raw, fmt)
-                end_dt = datetime.strptime(end_raw, fmt)
-                break
-            except ValueError:
-                continue
-        else:
-            return None, None
-        start_utc = start_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
-        end_utc = end_dt.replace(tzinfo=local_tz).astimezone(timezone.utc)
-        return (
-            start_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
-            end_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        )
-    except ValueError:
-        return None, None
 
 
-def run_parralel_scrape(event_list, event_type, max_workers=MAX_WORKERS):
+
+
+def run_parralel_scrape(
+    event_list,
+    event_type,
+    router,
+    max_workers=MAX_WORKERS,
+    last_parsed_event=last_parsed_event,
+):
+    counter = 0
     results = []
     if not event_list:
         return results
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         future_to_event = {
-            executor.submit(scrape_event, event, event_type): event
+            executor.submit(scrape_event, event, event_type, router): event
             for event in event_list
         }
         for future in tqdm(
@@ -204,11 +189,25 @@ def run_parralel_scrape(event_list, event_type, max_workers=MAX_WORKERS):
             data = future.result()
             if data:
                 results.append(data)
+                counter += 1
+                last_parsed_event += 1
+
+            if counter >= 10:
+                info("Saving state...")
+                to_save = {
+                    "data": results,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "last_event": last_parsed_event,
+                }
+                save_cache(to_save, "labirynt_cache_unified.json")
+                counter = 0
 
         return results
 
 
 def scrape_labirynt_exhibitions():
+    env = load_env()
+    router = OpenRouter(api_key=env.get("HCAI_KEY"), server_url=AI_URL)
     config = load_config()
     config = config["scrapers"]
     url = "https://labirynt.com/wystawy/"
@@ -237,7 +236,7 @@ def scrape_labirynt_exhibitions():
 
     if config["labirynt_exhibitions"]["enabled"]:
         all_events = events + future_events
-        data = run_parralel_scrape(all_events, event_type="exhb")
+        data = run_parralel_scrape(all_events, event_type="exhb", router=router)
     else:
         warn("Scraping labirynt_exhibitions is disabled in config")
 
@@ -251,10 +250,15 @@ def scrape_labirynt_exhibitions():
 
 
 def scrape_labirynt_events():
+    env = load_env()
+    router = OpenRouter(api_key=env.get("HCAI_KEY"), server_url=AI_URL)
     config = load_config()
     config = config["scrapers"]
     url = "https://labirynt.com/wydarzenia"
     base_url = "https://labirynt.com"
+    cache = load_cache("labirynt_events.json")
+    last_read = cache.get("last_read", 0) if cache else 0
+    last_parsed_event = last_read
 
     info(f"Starting diagnostics for: {url}")
 
@@ -274,7 +278,7 @@ def scrape_labirynt_events():
     data = []
     events = soup.find_all("div", class_="futureEvent")
     if config["labirynt_events"]["enabled"]:
-        data = run_parralel_scrape(events, event_type="evnt")
+        data = run_parralel_scrape(events, event_type="evnt", router=router)
     else:
         warn("Scraping labirynt_events is disabled in config")
 

@@ -9,7 +9,7 @@ collections = [ # with every new script that accesses pocketbase new entries mus
   "labirynt_wydarzenia",
   "events" # mono-collection with all unique events
 ]
-
+ai_url = "https://ai.hackclub.com/proxy/v1"
 [scrapers] # scrapers.script_id
 
 [scrapers.lublineu]
