@@ -10,6 +10,11 @@ collections = [ # with every new script that accesses pocketbase new entries mus
   "events" # mono-collection with all unique events
 ]
 ai_url = "https://ai.hackclub.com/proxy/v1"
+
+
+[proxy]
+url = ["http://45.74.31.30:13952"]
+
 [scrapers] # scrapers.script_id
 
 [scrapers.lublineu]

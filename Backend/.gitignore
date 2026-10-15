@@ -221,3 +221,5 @@ data/
 robots/
 cache/
 config/config.toml
+
+config/
