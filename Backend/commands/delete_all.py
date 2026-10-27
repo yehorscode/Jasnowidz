@@ -15,7 +15,6 @@ def delete_all_records():
         else:
             try:
                 records = get_collection(collection=collection, authorization=token)
-                print(records)
                 totalItems = 0
                 totalPages = 0
                 curPage = 1

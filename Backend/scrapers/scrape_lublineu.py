@@ -10,6 +10,7 @@ from tqdm import *
 
 from commands.auth import pocketbaseLogin
 from utils.config import load_config
+from utils.connecter import pget
 from utils.headers import headers
 from utils.logmanager import error, info, success, user_input, warn
 from utils.pocketbase import create_record, gen_hash
@@ -31,7 +32,7 @@ def scrape_lublineu():
 
     info(f"Started to scrape: {url}")
 
-    response = requests.get(url, headers=headers, verify=False)
+    response = pget(url, headers=headers)
     if response.status_code != 200:
         error(f"Error while loading {url}: {response.status_code}")
         return
@@ -88,8 +89,8 @@ def scrape_lublineu():
             # Direct link to event page
             if full_event_url != "None":
                 try:
-                    event_response = requests.get(
-                        full_event_url, headers=headers, verify=False
+                    event_response = pget(
+                        full_event_url, headers=headers
                     )
                     if event_response.status_code == 200:
                         event_soup = BeautifulSoup(
@@ -204,10 +205,9 @@ def scrape_lublineu():
                     event_title = link_element.get("title", "").strip()
                     event_url = link_element.get("href", "").strip()
 
-                    expanded_scrape = requests.get(
+                    expanded_scrape = pget(
                         f"https://lublin.eu{event_url}",
                         headers=headers,
-                        verify=False,
                     )
 
                     if expanded_scrape.status_code != 200:

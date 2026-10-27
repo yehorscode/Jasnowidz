@@ -13,7 +13,7 @@ ai_url = "https://ai.hackclub.com/proxy/v1"
 
 
 [proxy]
-url = ["http://45.74.31.30:13952"]
+# url = ["http://example.com:1111","http://example.com:2222"]
 
 [scrapers] # scrapers.script_id
 

@@ -8,6 +8,7 @@ from tqdm import *
 
 from commands.auth import pocketbaseLogin
 from utils.config import load_config
+from utils.connecter import pget
 from utils.headers import headers
 from utils.logmanager import error, info, success, warn
 from utils.pocketbase import create_record, gen_hash
@@ -39,13 +40,13 @@ def scrape_event(event):
 
     link = str(link_element["href"]) if link_element else "None"
 
-    expanded_event = requests.get(link, headers=headers)
+    expanded_event = pget(link, headers=headers)
     cost = None
     description = None
 
     if link:
         try:
-            link_response = requests.get(link, headers=headers, timeout=10)
+            link_response = pget(link, headers=headers, timeout=10)
             if link_response.status_code == 200:
                 link_soup = BeautifulSoup(link_response.content, "html.parser")
 
@@ -113,7 +114,7 @@ def scrape_zoom_running():
 
     info(f"Started diagnostics for: {url}")
 
-    response = requests.get(url, headers=headers)
+    response = pget(url, headers=headers)
     if response.status_code != 200:
         error(f"Error while loading {url}: {response.status_code}")
         return

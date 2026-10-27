@@ -8,6 +8,7 @@ from tqdm import tqdm
 from commands.auth import pocketbaseLogin
 from utils import pocketbase
 from utils.config import load_config
+from utils.connecter import pget
 from utils.headers import headers
 from utils.logmanager import error, info, success, warn
 
@@ -54,7 +55,7 @@ def _scrape_something():
 
     info(f"Starting diagnostics for: {url}")
 
-    response = requests.get(url, headers=headers)
+    response = pget(url, headers=headers)
     if response.status_code != 200:
         error(f"Error while downloading {url}: {response.status_code}")
         return

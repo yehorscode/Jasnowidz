@@ -23,6 +23,7 @@ from utils.config import (
     load_env,
     save_cache,
 )
+from utils.connecter import pget
 from utils.headers import headers
 from utils.logmanager import error, info, success, warn
 
@@ -52,7 +53,7 @@ def scrape_event(event, ev_type, router):
         if event_name:
             event_name = event_name.find("a")
             event_name = event_name.text if event_name else None
-        full_event = requests.get(str(event_link), headers=headers)
+        full_event = pget(str(event_link), headers=headers)
         event_bs = BeautifulSoup(full_event.content, "html.parser")
 
         # this is basically the description + some additional data
@@ -107,7 +108,7 @@ def scrape_event(event, ev_type, router):
             event_name = event_name.find("a")
             event_name = event_name.text if event_name else None
 
-        full_event = requests.get(str(event_link), headers=headers)
+        full_event = pget(str(event_link), headers=headers)
         event_bs = BeautifulSoup(full_event.content, "html.parser")
 
         event_description = event_bs.find("div", class_="wysiwyg")
@@ -215,7 +216,7 @@ def scrape_labirynt_exhibitions():
 
     info(f"Starting diagnostics for: {url}")
 
-    response = requests.get(url, headers=headers)
+    response = pget(url, headers=headers)
     if response.status_code != 200:
         error(f"Error while downloading {url}: {response.status_code}")
         return
@@ -227,7 +228,7 @@ def scrape_labirynt_exhibitions():
     info(f"Scraping page: {url}")
 
     content = response.content
-    future_content = requests.get("https://labirynt.com/wystawy/?future=true")
+    future_content = pget("https://labirynt.com/wystawy/?future=true")
     soup = BeautifulSoup(content, "html.parser")
     future_soup = BeautifulSoup(future_content.content, "html.parser")
     data = []
@@ -262,7 +263,7 @@ def scrape_labirynt_events():
 
     info(f"Starting diagnostics for: {url}")
 
-    response = requests.get(url, headers=headers)
+    response = pget(url, headers=headers)
     if response.status_code != 200:
         error(f"Error while downloading {url}: {response.status_code}")
         return
