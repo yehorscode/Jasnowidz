@@ -1,0 +1,17 @@
+[project]
+name = "jasnowidzpy"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "bs4>=0.0.2",
+    "certifi>=2026.10.23",
+    "colorama>=0.4.6",
+    "dotenv>=0.9.9",
+    "requests>=2.34.2",
+    "tqdm>=4.68.2",
+]
+
+[tool.pyright]
+typeCheckingMode = "standard"

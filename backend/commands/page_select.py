@@ -1,0 +1,44 @@
+from colorama import Style
+
+from scrapers.scrape_labirynt import scrape_labirynt_events, scrape_labirynt_exhibitions
+from scrapers.scrape_lublineu import scrape_lublineu
+from scrapers.scrape_zoom import scrape_zoom
+from scrapers.scrape_zoom_running import scrape_zoom_running
+from utils.logmanager import *
+
+
+def select_scrape_site():
+    print(f"{Fore.GREEN}Select what to scrape:{Style.RESET_ALL}")
+    print(f"{Fore.RED} 1 {Style.RESET_ALL} - All (Long)")
+    print(
+        f"{Fore.CYAN} 2 {Style.RESET_ALL} - https://lublin.eu/kultura/wydarzenia/ (events + running)"
+    )
+    print(f"{Fore.CYAN} 3 {Style.RESET_ALL} - https://zoom.lublin.pl (events)")
+    print(
+        f"{Fore.CYAN} 4 {Style.RESET_ALL} - https://zoom.lublin.pl/w-trakcie (running events)"
+    )
+    print(
+        f"{Fore.CYAN} 5 {Style.RESET_ALL} - https://labirynt.com/wystawy (running + future | exhibitions)"
+    )
+    print(
+        f"{Fore.CYAN} 6 {Style.RESET_ALL} - https://labirynt.com/wydarzenia (old + future | events)"
+    )
+    info("Remember: do not run the script too often or you will be ratelimited")
+    response = user_input("Select: ")
+    if response == "1":
+        scrape_lublineu()
+        scrape_zoom()
+        scrape_zoom_running()
+        scrape_labirynt_exhibitions()
+        scrape_labirynt_events()
+        success("\a \n SCRAPING ENDED")
+    elif response == "2":
+        scrape_lublineu()
+    elif response == "3":
+        scrape_zoom()
+    elif response == "4":
+        scrape_zoom_running()
+    elif response == "5":
+        scrape_labirynt_exhibitions()
+    elif response == "6":
+        scrape_labirynt_events()
