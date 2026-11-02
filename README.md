@@ -5,7 +5,7 @@ Currently only 3 sites scraping is implemented.
 
 ### Running frontend locally
 Frontend made with astro, so it's easy to run it.
-`cd Frontend/ && pnpm astro dev`
+`cd frontend/ && pnpm astro dev`
 That's all
 
 ### Running backend scripts

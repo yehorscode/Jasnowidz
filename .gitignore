@@ -15,8 +15,8 @@ downloads/
 eggs/
 .eggs/
 lib/
-!Frontend/src/lib/
-!Frontend/src/lib/pocketbase.ts
+!frontend/src/lib/
+!frontend/src/lib/pocketbase.ts
 lib64/
 parts/
 sdist/
@@ -222,4 +222,4 @@ __marimo__/
 backend/config/config.toml
 config.toml
 backend/.env
-Frontend/.env
+frontend/.env
